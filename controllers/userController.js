@@ -1,15 +1,30 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+async function testDB() {
+  try {
+    await prisma.$connect();
+    console.log("✅ Conexión a la base de datos exitosa.");
+  } catch (error) {
+    console.error("❌ Error conectando a la base de datos:", error);
+  }
+}
+
+testDB();
+
 // Obtener todos los usuarios
 const getUsers = async (req, res) => {
   try {
+    console.log("🔍 Consultando usuarios...");
     const users = await prisma.user.findMany();
+    console.log("✅ Usuarios obtenidos correctamente.");
     res.json(users);
   } catch (error) {
-    console.error("Error al obtener usuarios:", error); // 👈 Agregar log del error
-
-    res.status(500).json({ error: "⚠️ Error obteniendo usuarios." });
+    console.error("❌ ERROR Prisma - No se pudo obtener usuarios:", error);
+    res.status(500).json({
+      error: "⚠️ Error obteniendo usuarios.",
+      details: error.message,
+    });
   }
 };
 
