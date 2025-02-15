@@ -20,8 +20,9 @@ app.get("/", (req, res) => {
 });
 
 // Configuración del puerto para Render
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000; // ⚠️ Cambia esto
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
+  // 👈 IMPORTANTE: Agrega "0.0.0.0"
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });
