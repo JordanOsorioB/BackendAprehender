@@ -21,6 +21,7 @@ app.get("/", (req, res) => {
 
 // Configuración del puerto para Render
 const PORT = process.env.PORT || 10000; // ⚠️ Cambia esto
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
 app.listen(PORT, "0.0.0.0", () => {
   // 👈 IMPORTANTE: Agrega "0.0.0.0"
