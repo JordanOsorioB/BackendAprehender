@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Progress {
+  id          String   @id @default(uuid())
+  lesson      String
+  completion  Float
+  lastUpdated DateTime @updatedAt
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id])
+
+  @@index([courseId])
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+  courses   Course[] @relation("TeacherToCourses")
+}
+
+model Course {
+  id        String     @id @default(uuid())
+  teacherId String
+  school    String
+  address   String
+  grade     String
+  subject   String
+  createdAt DateTime   @default(now())
+  teacher   User       @relation("TeacherToCourses", fields: [teacherId], references: [id])
+  progress  Progress[]
+
+  @@index([teacherId])
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
