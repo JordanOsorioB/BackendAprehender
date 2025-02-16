@@ -3,7 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
 const courseRoutes = require("./routes/courseRoutes");
-
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 const app = express();
 
 // Middleware
