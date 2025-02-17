@@ -7,6 +7,39 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model School {
+  id        String    @id @default(uuid())
+  name      String
+  address   String
+  code      String    @unique
+  users     User[]    @relation("UserToSchool") // Relación inversa con User
+  courses   Course[]
+  teachers  Teacher[]
+  createdAt DateTime  @default(now())
+
+  @@unique([name, code]) // Para evitar duplicados
+}
+
+model Teacher {
+  id        String     @id @default(uuid())
+  name      String
+  year      SchoolYear // Año escolar como ENUM
+  schoolId  String
+  school    School     @relation(fields: [schoolId], references: [id])
+  subjectId String
+  subject   Subject    @relation(fields: [subjectId], references: [id])
+  courses   Course[]
+
+  @@index([schoolId])
+  @@index([subjectId])
+}
+
+model Subject {
+  id       String    @id @default(uuid())
+  name     String    @unique // Nombre de la asignatura
+  teachers Teacher[] // Relación con los profesores que enseñan esta materia
+}
+
 model Progress {
   id          String   @id @default(uuid())
   lesson      String
@@ -20,30 +53,48 @@ model Progress {
 
 model User {
   id        String   @id @default(uuid())
-  name      String
+  username  String   @unique
   email     String   @unique
   password  String
   role      Role
+  schoolId  String? // Puede ser nulo si el usuario no pertenece a ninguna escuela
+  school    School?  @relation("UserToSchool", fields: [schoolId], references: [id], onDelete: Cascade) // Relación con School
   createdAt DateTime @default(now())
-  courses   Course[] @relation("TeacherToCourses")
 }
 
 model Course {
-  id        String     @id @default(uuid())
+  id        String   @id @default(uuid())
   teacherId String
-  school    String
-  address   String
+  schoolId  String
   grade     String
   subject   String
-  createdAt DateTime   @default(now())
-  teacher   User       @relation("TeacherToCourses", fields: [teacherId], references: [id])
-  progress  Progress[]
+  createdAt DateTime @default(now())
+
+  teacher  Teacher    @relation(fields: [teacherId], references: [id])
+  school   School     @relation(fields: [schoolId], references: [id])
+  progress Progress[]
 
   @@index([teacherId])
+  @@index([schoolId])
 }
 
 enum Role {
   ADMIN
   TEACHER
   STUDENT
+}
+
+enum SchoolYear {
+  PRIMERO_BASICO
+  SEGUNDO_BASICO
+  TERCERO_BASICO
+  CUARTO_BASICO
+  QUINTO_BASICO
+  SEXTO_BASICO
+  SEPTIMO_BASICO
+  OCTAVO_BASICO
+  PRIMERO_MEDIO
+  SEGUNDO_MEDIO
+  TERCERO_MEDIO
+  CUARTO_MEDIO
 }

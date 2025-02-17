@@ -1,10 +1,12 @@
 require("dotenv").config();
-require("./testDB");
 
 const express = require("express");
 const cors = require("cors");
 const userRoutes = require("./routes/userRoutes");
 const courseRoutes = require("./routes/courseRoutes");
+const schoolRoutes = require("./routes/schoolRoutes");
+const teacherRoutes = require("./routes/teacherRoutes");
+const subjectRoutes = require("./routes/subjectRoutes");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const app = express();
@@ -30,10 +32,13 @@ async function applyMigrations() {
     console.error("❌ No se puede acceder a la base de datos:", error);
   }
 }
+app.use("/schools", schoolRoutes);
+app.use("/teachers", teacherRoutes);
+app.use("/subjects", subjectRoutes);
 
 applyMigrations();
 // Configuración del puerto para Render
-const PORT = process.env.PORT || 10000; // ⚠️ Cambia esto
+const PORT = process.env.PORT || 3000; // ⚠️ Cambia esto
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
 app.listen(PORT, "0.0.0.0", () => {
