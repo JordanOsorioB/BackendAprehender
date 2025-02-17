@@ -5,6 +5,7 @@ const {
   getSchoolById,
   updateSchool,
   deleteSchool,
+  getSchoolByCode,
 } = require("../controllers/schoolController");
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.post("/", createSchool);
 router.get("/:id", getSchoolById);
 router.put("/:id", updateSchool);
 router.delete("/:id", deleteSchool);
+router.get("/schools/code/:code", getSchoolByCode);
 
 module.exports = router;

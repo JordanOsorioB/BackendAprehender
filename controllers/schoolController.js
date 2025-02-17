@@ -10,6 +10,22 @@ const getSchools = async (req, res) => {
     res.status(500).json({ error: "⚠️ Error obteniendo las escuelas." });
   }
 };
+// Obtener una escuela por código
+const getSchoolByCode = async (req, res) => {
+  const { code } = req.params; // Tomar el código desde la URL
+
+  try {
+    const school = await prisma.school.findUnique({ where: { code } });
+
+    if (!school) {
+      return res.status(404).json({ error: "⚠️ Escuela no encontrada." });
+    }
+
+    res.json(school);
+  } catch (error) {
+    res.status(500).json({ error: "⚠️ Error obteniendo la escuela." });
+  }
+};
 
 // Crear una nueva escuela
 const createSchool = async (req, res) => {
@@ -84,4 +100,5 @@ module.exports = {
   getSchoolById,
   updateSchool,
   deleteSchool,
+  getSchoolByCode,
 };

@@ -30,12 +30,15 @@ const getUsers = async (req, res) => {
 
 // Crear un nuevo usuario con validación de rol
 const createUser = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { username, email, password, role, schoolId } = req.body;
 
-  if (!name || !email || !password || !role) {
+  if (!username || !email || !password || !role) {
     return res
       .status(400)
-      .json({ error: "⚠️ Todos los campos son obligatorios." });
+      .json({
+        error:
+          "⚠️ Todos los campos son obligatorios (username, email, password, role).",
+      });
   }
 
   // Verificar que el rol sea válido
@@ -47,27 +50,35 @@ const createUser = async (req, res) => {
   }
 
   try {
-    // Verificar si el usuario ya existe
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    // Verificar si el usuario ya existe (por email o username)
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { username }],
+      },
+    });
 
     if (existingUser) {
       return res
         .status(400)
-        .json({ error: "⚠️ El correo ya está registrado." });
+        .json({
+          error: "⚠️ El correo o el nombre de usuario ya están registrados.",
+        });
     }
 
     // Crear usuario con el rol especificado
     const newUser = await prisma.user.create({
       data: {
-        name,
+        username,
         email,
         password,
         role,
+        schoolId, // Puede ser nulo si el usuario no pertenece a ninguna escuela
       },
     });
 
     res.json({ message: "✅ Usuario registrado con éxito.", user: newUser });
   } catch (error) {
+    console.error("Error en createUser:", error);
     res
       .status(500)
       .json({ error: "⚠️ Error creando usuario.", details: error.message });
