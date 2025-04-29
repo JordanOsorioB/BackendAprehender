@@ -10,6 +10,17 @@ const subjectRoutes = require("./routes/subjectRoutes");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const app = express();
+const studentRoutes = require('./routes/studentRoutes');
+const exerciseRoutes = require('./routes/exerciseRoutes');
+const unitRoutes = require("./routes/unitRoutes");
+const levelRoutes = require("./routes/levelRoutes");
+const exerciseStatusRoutes = require("./routes/exerciseStatusRoutes");
+const exerciseContentRoutes = require("./routes/exerciseContentRoutes");
+const alternativeContentRoutes = require("./routes/alternativeContentRoutes");
+const alternativeOptionRoutes = require("./routes/alternativeOptionRoutes");
+const developmentContentRoutes = require("./routes/developmentContentRoutes");
+const pairingContentRoutes = require("./routes/pairingContentRoutes");
+const pairingPairRoutes = require("./routes/pairingPairRoutes");
 
 // Middleware
 app.use(cors());
@@ -35,6 +46,18 @@ async function applyMigrations() {
 app.use("/schools", schoolRoutes);
 app.use("/teachers", teacherRoutes);
 app.use("/subjects", subjectRoutes);
+app.use('/students', studentRoutes);
+app.use('/exercises', exerciseRoutes);
+app.use("/units", unitRoutes);
+app.use("/levels", levelRoutes);
+app.use("/exercise-statuses", exerciseStatusRoutes);
+app.use("/exercise-contents", exerciseContentRoutes);
+app.use("/alternative-contents", alternativeContentRoutes);
+app.use("/alternative-options", alternativeOptionRoutes);
+app.use("/development-contents", developmentContentRoutes);
+app.use("/pairing-contents", pairingContentRoutes);
+app.use("/pairing-pairs", pairingPairRoutes);
+
 
 applyMigrations();
 // Configuración del puerto para Render

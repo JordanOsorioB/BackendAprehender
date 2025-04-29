@@ -1,31 +1,31 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// Obtener todas las asignaturas
-const getSubjects = async (req, res) => {
+// Obtener todos los estudiantes
+const getStudents = async (req, res) => {
   try {
-    const subjects = await prisma.subject.findMany();
-    res.json(subjects);
+    const students = await prisma.student.findMany();
+    res.json(students);
   } catch (error) {
-    res.status(500).json({ error: "⚠️ Error obteniendo las asignaturas." });
+    res.status(500).json({ error: "⚠️ Error obteniendo los estudiantes." });
   }
 };
 
-// Crear una nueva asignatura
-const createSubject = async (req, res) => {
-  const { name } = req.body;
-  if (!name) {
-    return res
-      .status(400)
-      .json({ error: "⚠️ El nombre de la asignatura es obligatorio." });
+// Crear un nuevo estudiante
+const createStudent = async (req, res) => {
+  const { name, course, levelCurrent, experienceCurrent, experienceNeeded } = req.body;
+  if (!name || !course) {
+    return res.status(400).json({ error: "⚠️ El nombre y curso son obligatorios." });
   }
 
   try {
-    const subject = await prisma.subject.create({ data: { name } });
-    res.json({ message: "✅ Asignatura creada correctamente.", subject });
+    const student = await prisma.student.create({
+      data: { name, course, levelCurrent, experienceCurrent, experienceNeeded }
+    });
+    res.json({ message: "✅ Estudiante creado correctamente.", student });
   } catch (error) {
-    res.status(500).json({ error: "⚠️ Error creando la asignatura." });
+    res.status(500).json({ error: "⚠️ Error creando el estudiante." });
   }
 };
 
-module.exports = { getSubjects, createSubject };
+module.exports = { getStudents, createStudent };

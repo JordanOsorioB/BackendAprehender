@@ -98,3 +98,106 @@ enum SchoolYear {
   TERCERO_MEDIO
   CUARTO_MEDIO
 }
+
+model Student {
+  id                 String   @id @default(cuid())
+  name               String
+  course             String
+  levelCurrent       Int
+  experienceCurrent  Int
+  experienceNeeded   Int
+
+  subjectProgress    StudentSubjectProgress[]
+  exerciseStates     ExerciseState[]
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  name        String
+
+  units       SubjectUnit[]
+  students    StudentSubjectProgress[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SubjectUnit {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  order       Int
+
+  subjectId   String
+  subject     Subject   @relation(fields: [subjectId], references: [id])
+
+  exercises   Exercise[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Exercise {
+  id                String   @id @default(cuid())
+  title             String
+  description       String
+  type              ExerciseType
+  difficulty        DifficultyLevel
+  totalExperience   Int
+
+  unitId            String
+  unit              SubjectUnit @relation(fields: [unitId], references: [id])
+
+  exerciseStates    ExerciseState[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ExerciseState {
+  id                  String   @id @default(cuid())
+  completed           Boolean
+  attempts            Int
+  lastAttempt         DateTime
+  correctAnswers      Int
+  experienceEarned    Int
+  locked              Boolean
+
+  exerciseId          String
+  studentId           String
+
+  exercise            Exercise @relation(fields: [exerciseId], references: [id])
+  student             Student  @relation(fields: [studentId], references: [id])
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model StudentSubjectProgress {
+  id            String   @id @default(cuid())
+  progress      Int
+
+  studentId     String
+  subjectId     String
+
+  student       Student  @relation(fields: [studentId], references: [id])
+  subject       Subject  @relation(fields: [subjectId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum ExerciseType {
+  MULTIPLE_CHOICE
+  DEVELOPMENT
+  MATCHING_TERMS
+}
+
+enum DifficultyLevel {
+  EASY
+  MEDIUM
+  HARD
+}
