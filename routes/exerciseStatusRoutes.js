@@ -1,9 +1,9 @@
 const express = require("express");
-const { createExerciseStatus, getExerciseStatuses } = require("../controllers/exerciseStatusController");
+const { createExerciseState, getExerciseStates } = require("../controllers/exerciseStateController");
 
 const router = express.Router();
 
-router.post("/", createExerciseStatus); // Crear nuevo estado de ejercicio
-router.get("/", getExerciseStatuses);   // Obtener todos los estados
+router.post("/", createExerciseState); // Crear nuevo estado de ejercicio
+router.get("/", getExerciseStates);   // Obtener todos los estados
 
 module.exports = router;
