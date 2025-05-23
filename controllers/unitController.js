@@ -1,32 +1,72 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// Obtener todas las unidades
+
+ // Obtener todos los Units
+
 const getUnits = async (req, res) => {
-    try {
-        const units = await prisma.unit.findMany();
-        res.json(units);
-    } catch (error) {
-        res.status(500).json({ error: "⚠️ Error obteniendo las unidades." });
-    }
+  try {
+    const units = await prisma.unit.findMany();
+    res.json(units);
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo unidades.", details: error.message });
+  }
 };
 
-// Crear una nueva unidad
+ // Obtener Unit por ID
+
+const getUnitById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const unit = await prisma.unit.findUnique({ where: { id: parseInt(id) } });
+    if (!unit) return res.status(404).json({ error: "Unidad no encontrada." });
+    res.json(unit);
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo unidad.", details: error.message });
+  }
+};
+
+ // Crear una nueva Unit
+
 const createUnit = async (req, res) => {
-    const { title, description, order, progress, subjectId } = req.body;
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: "Campo 'name' es obligatorio." });
 
-    if (!title || !subjectId) {
-        return res.status(400).json({ error: "⚠️ El título y el ID de la asignatura son obligatorios." });
-    }
-
-    try {
-        const unit = await prisma.unit.create({
-        data: { title, description, order, progress, subjectId }
-        });
-        res.json({ message: "✅ Unidad creada correctamente.", unit });
-    } catch (error) {
-        res.status(500).json({ error: "⚠️ Error creando la unidad." });
-    }
+  try {
+    const newUnit = await prisma.unit.create({ data: { name } });
+    res.json({ message: "Unidad creada.", unit: newUnit });
+  } catch (error) {
+    res.status(500).json({ error: "Error creando unidad.", details: error.message });
+  }
 };
 
-module.exports = { getUnits, createUnit };
+ // Actualizar Unit por ID
+
+const updateUnit = async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+  try {
+    const updatedUnit = await prisma.unit.update({
+      where: { id: parseInt(id) },
+      data: { name },
+    });
+    res.json(updatedUnit);
+  } catch (error) {
+    res.status(500).json({ error: "Error actualizando unidad.", details: error.message });
+  }
+};
+
+ // Eliminar Unit por ID
+
+const deleteUnit = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await prisma.unit.delete({ where: { id: parseInt(id) } });
+    res.json({ message: "Unidad eliminada." });
+  } catch (error) {
+    res.status(500).json({ error: "Error eliminando unidad.", details: error.message });
+  }
+};
+
+
+module.exports = { getUnits, getUnitById, createUnit, updateUnit, deleteUnit };

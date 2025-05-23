@@ -7,197 +7,215 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Student {
+  id                String                   @id @default(cuid())
+  nombre            String
+  level             Int
+  experience        Int
+  courseEnrollments CourseEnrollment[]
+  subjectProgress   StudentSubjectProgress[]
+  exerciseStates    ExerciseState[]
+  unitProgress      StudentUnitProgress[]
+}
+
+model CourseEnrollment {
+  id        String   @id @default(cuid())
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId String
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String
+  createdAt DateTime @default(now())
+}
+
 model School {
-  id        String    @id @default(uuid())
-  name      String
-  address   String
-  code      String    @unique
-  users     User[]    @relation("UserToSchool") // Relación inversa con User
-  courses   Course[]
-  teachers  Teacher[]
-  createdAt DateTime  @default(now())
-
-  @@unique([name, code]) // Para evitar duplicados
-}
-
-model Teacher {
-  id        String     @id @default(uuid())
-  name      String
-  year      SchoolYear // Año escolar como ENUM
-  schoolId  String
-  school    School     @relation(fields: [schoolId], references: [id])
-  subjectId String
-  subject   Subject    @relation(fields: [subjectId], references: [id])
-  courses   Course[]
-
-  @@index([schoolId])
-  @@index([subjectId])
-}
-
-model Subject {
-  id       String    @id @default(uuid())
-  name     String    @unique // Nombre de la asignatura
-  teachers Teacher[] // Relación con los profesores que enseñan esta materia
-}
-
-model Progress {
-  id          String   @id @default(uuid())
-  lesson      String
-  completion  Float
-  lastUpdated DateTime @updatedAt
-  courseId    String
-  course      Course   @relation(fields: [courseId], references: [id])
-
-  @@index([courseId])
+  id       String    @id @default(cuid())
+  name     String
+  users    User[]    @relation("UserToSchool")
+  teachers Teacher[]
+  courses  Course[]
 }
 
 model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  email     String   @unique
-  password  String
-  role      Role
-  schoolId  String? // Puede ser nulo si el usuario no pertenece a ninguna escuela
-  school    School?  @relation("UserToSchool", fields: [schoolId], references: [id], onDelete: Cascade) // Relación con School
-  createdAt DateTime @default(now())
+  id       String  @id @default(cuid())
+  email    String  @unique
+  password String
+  school   School? @relation("UserToSchool", fields: [schoolId], references: [id])
+  schoolId String?
 }
 
-model Course {
-  id        String   @id @default(uuid())
-  teacherId String
+model Teacher {
+  id        String   @id @default(cuid())
+  name      String
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  subjectId String
+  school    School   @relation(fields: [schoolId], references: [id])
   schoolId  String
-  grade     String
-  subject   String
-  createdAt DateTime @default(now())
-
-  teacher  Teacher    @relation(fields: [teacherId], references: [id])
-  school   School     @relation(fields: [schoolId], references: [id])
-  progress Progress[]
-
-  @@index([teacherId])
-  @@index([schoolId])
-}
-
-enum Role {
-  ADMIN
-  TEACHER
-  STUDENT
-}
-
-enum SchoolYear {
-  PRIMERO_BASICO
-  SEGUNDO_BASICO
-  TERCERO_BASICO
-  CUARTO_BASICO
-  QUINTO_BASICO
-  SEXTO_BASICO
-  SEPTIMO_BASICO
-  OCTAVO_BASICO
-  PRIMERO_MEDIO
-  SEGUNDO_MEDIO
-  TERCERO_MEDIO
-  CUARTO_MEDIO
-}
-
-model Student {
-  id                 String   @id @default(cuid())
-  name               String
-  course             String
-  levelCurrent       Int
-  experienceCurrent  Int
-  experienceNeeded   Int
-
-  subjectProgress    StudentSubjectProgress[]
-  exerciseStates     ExerciseState[]
-
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  courses   Course[]
 }
 
 model Subject {
-  id          String   @id @default(cuid())
+  id              String                   @id @default(cuid())
+  name            String
+  teachers        Teacher[]
+  units           SubjectUnit[]
+  studentProgress StudentSubjectProgress[]
+}
+
+model Course {
+  id          String             @id @default(cuid())
   name        String
+  school      School             @relation(fields: [schoolId], references: [id])
+  schoolId    String
+  teacher     Teacher            @relation(fields: [teacherId], references: [id])
+  teacherId   String
+  progress    Progress[]
+  enrollments CourseEnrollment[]
+}
 
-  units       SubjectUnit[]
-  students    StudentSubjectProgress[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Progress {
+  id       String @id @default(cuid())
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String
 }
 
 model SubjectUnit {
-  id          String   @id @default(cuid())
+  id           Int                   @id @default(autoincrement())
+  title        String
+  description  String
+  order        Int
+  subject      Subject               @relation(fields: [subjectId], references: [id])
+  subjectId    String
+  exercises    Exercise[]
+  unitProgress StudentUnitProgress[] @relation("ProgressToSubjectUnit")
+
+  unit   Unit @relation("UnitSubjectUnits", fields: [unitId], references: [id])
+  unitId Int
+}
+
+model Exercise {
+  id               String            @id @default(cuid())
+  title            String
+  description      String
+  type             ExerciseType
+  difficulty       String
+  totalExperience  Int
+  subjectUnit      SubjectUnit       @relation(fields: [subjectUnitId], references: [id])
+  subjectUnitId    Int
+  states           ExerciseState[]
+  content          Json
+  exerciseContents ExerciseContent[]
+}
+
+model ExerciseState {
+  id               String   @id @default(cuid())
+  student          Student  @relation(fields: [studentId], references: [id])
+  studentId        String
+  exercise         Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId       String
+  completed        Boolean
+  attempts         Int
+  lastAttempt      DateTime
+  correctAnswers   Int
+  experienceEarned Int
+  locked           Boolean
+}
+
+model StudentSubjectProgress {
+  id        String  @id @default(cuid())
+  student   Student @relation(fields: [studentId], references: [id])
+  studentId String
+  subject   Subject @relation(fields: [subjectId], references: [id])
+  subjectId String
+  progress  Int
+}
+
+model StudentUnitProgress {
+  id        String  @id @default(cuid())
+  student   Student @relation(fields: [studentId], references: [id])
+  studentId String
+
+  subjectUnit SubjectUnit @relation("ProgressToSubjectUnit", fields: [unitId], references: [id])
+  unitId      Int
+
+  unit     Unit @relation("ProgressToUnit", fields: [unitFkId], references: [id])
+  unitFkId Int
+
+  progress Int
+}
+
+model Unit {
+  id          Int    @id @default(autoincrement())
   title       String
   description String
   order       Int
 
-  subjectId   String
-  subject     Subject   @relation(fields: [subjectId], references: [id])
-
-  exercises   Exercise[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  subjectUnits       SubjectUnit[]         @relation("UnitSubjectUnits")
+  levels             Level[]
+  unitProgress       StudentUnitProgress[] @relation("ProgressToUnit")
+  developmentContent DevelopmentContent[]
 }
 
-model Exercise {
-  id                String   @id @default(cuid())
-  title             String
-  description       String
-  type              ExerciseType
-  difficulty        DifficultyLevel
-  totalExperience   Int
-
-  unitId            String
-  unit              SubjectUnit @relation(fields: [unitId], references: [id])
-
-  exerciseStates    ExerciseState[]
-
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+model Level {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String?
+  order        Int
+  unit         Unit          @relation(fields: [unitId], references: [id])
+  unitId       Int
+  pairingPairs PairingPair[]
 }
 
-model ExerciseState {
-  id                  String   @id @default(cuid())
-  completed           Boolean
-  attempts            Int
-  lastAttempt         DateTime
-  correctAnswers      Int
-  experienceEarned    Int
-  locked              Boolean
-
-  exerciseId          String
-  studentId           String
-
-  exercise            Exercise @relation(fields: [exerciseId], references: [id])
-  student             Student  @relation(fields: [studentId], references: [id])
-
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+model PairingPair {
+  id              Int              @id @default(autoincrement())
+  name            String
+  description     String?
+  level           Level            @relation(fields: [levelId], references: [id])
+  levelId         Int
+  pairingContents PairingContent[]
 }
 
-model StudentSubjectProgress {
-  id            String   @id @default(cuid())
-  progress      Int
+model PairingContent {
+  id            Int         @id @default(autoincrement())
+  content       String
+  pairingPair   PairingPair @relation(fields: [pairingPairId], references: [id])
+  pairingPairId Int
+}
 
-  studentId     String
-  subjectId     String
+model DevelopmentContent {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  content     String
+  unit        Unit    @relation(fields: [unitId], references: [id])
+  unitId      Int
+}
 
-  student       Student  @relation(fields: [studentId], references: [id])
-  subject       Subject  @relation(fields: [subjectId], references: [id])
+model ExerciseContent {
+  id           Int                 @id @default(autoincrement())
+  content      Json
+  exercise     Exercise            @relation(fields: [exerciseId], references: [id])
+  exerciseId   String
+  alternatives AlternativeOption[]
+}
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model AlternativeOption {
+  id                  Int                  @id @default(autoincrement())
+  text                String
+  isCorrect           Boolean
+  exerciseContent     ExerciseContent      @relation(fields: [exerciseContentId], references: [id])
+  exerciseContentId   Int
+  alternativeContents AlternativeContent[]
+}
+
+model AlternativeContent {
+  id                  Int               @id @default(autoincrement())
+  description         String
+  alternativeOption   AlternativeOption @relation(fields: [alternativeOptionId], references: [id])
+  alternativeOptionId Int
 }
 
 enum ExerciseType {
-  MULTIPLE_CHOICE
-  DEVELOPMENT
-  MATCHING_TERMS
-}
-
-enum DifficultyLevel {
-  EASY
-  MEDIUM
-  HARD
+  alternativas
+  desarrollo
+  terminos_pareados
 }

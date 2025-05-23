@@ -39,4 +39,42 @@ const getCourses = async (req, res) => {
   }
 };
 
-module.exports = { createCourse, getCourses };
+// Obtener curso por ID
+const getCourseById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const course = await prisma.course.findUnique({ where: { id } });
+    if (!course) return res.status(404).json({ error: "Curso no encontrado." });
+    res.json(course);
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo curso.", details: error.message });
+  }
+};
+
+// Actualizar curso
+const updateCourse = async (req, res) => {
+  const { id } = req.params;
+  const { name, schoolId, teacherId } = req.body;
+  try {
+    const updatedCourse = await prisma.course.update({
+      where: { id },
+      data: { name, schoolId, teacherId },
+    });
+    res.json(updatedCourse);
+  } catch (error) {
+    res.status(500).json({ error: "Error actualizando curso.", details: error.message });
+  }
+};
+
+// Eliminar curso
+const deleteCourse = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await prisma.course.delete({ where: { id } });
+    res.json({ message: "Curso eliminado correctamente." });
+  } catch (error) {
+    res.status(500).json({ error: "Error eliminando curso.", details: error.message });
+  }
+};
+
+module.exports = { createCourse, getCourses , getCourseById, updateCourse , deleteCourse};

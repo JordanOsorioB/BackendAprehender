@@ -1,31 +1,68 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// Obtener progreso de estudiantes en asignaturas
-const getStudentSubjectProgress = async (req, res) => {
-    try {
-        const progresses = await prisma.studentSubjectProgress.findMany();
-        res.json(progresses);
-    } catch (error) {
-        res.status(500).json({ error: "⚠️ Error obteniendo el progreso de estudiantes." });
-    }
+// Obtener todos los progresos de materia por estudiante
+const getStudentSubjectProgresses = async (req, res) => {
+  try {
+    const progresses = await prisma.studentSubjectProgress.findMany();
+    res.json(progresses);
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo progreso de materias.", details: error.message });
+  }
 };
 
-// Crear un nuevo progreso de estudiante en asignatura
+// Obtener progreso por ID
+const getStudentSubjectProgressById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const progress = await prisma.studentSubjectProgress.findUnique({ where: { id } });
+    if (!progress) return res.status(404).json({ error: "Progreso no encontrado." });
+    res.json(progress);
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo progreso.", details: error.message });
+  }
+};
+
+// Crear nuevo progreso de materia
 const createStudentSubjectProgress = async (req, res) => {
-    const { progress, studentId, subjectId } = req.body;
-    if (!studentId || !subjectId) {
-        return res.status(400).json({ error: "⚠️ El estudiante y la asignatura son obligatorios." });
-    }
-
-    try {
-        const progressRecord = await prisma.studentSubjectProgress.create({
-        data: { progress, studentId, subjectId }
-        });
-        res.json({ message: "✅ Progreso de estudiante creado correctamente.", progressRecord });
-    } catch (error) {
-        res.status(500).json({ error: "⚠️ Error creando el progreso de estudiante." });
-    }
+  const { studentId, subjectId, progress } = req.body;
+  if (!studentId || !subjectId || progress == null) {
+    return res.status(400).json({ error: "Faltan campos obligatorios." });
+  }
+  try {
+    const newProgress = await prisma.studentSubjectProgress.create({
+      data: { studentId, subjectId, progress },
+    });
+    res.json({ message: "Progreso creado con éxito.", progress: newProgress });
+  } catch (error) {
+    res.status(500).json({ error: "Error creando progreso.", details: error.message });
+  }
 };
 
-module.exports = { getStudentSubjectProgress, createStudentSubjectProgress };
+// Actualizar progreso de materia
+const updateStudentSubjectProgress = async (req, res) => {
+  const { id } = req.params;
+  const { studentId, subjectId, progress } = req.body;
+  try {
+    const updatedProgress = await prisma.studentSubjectProgress.update({
+      where: { id },
+      data: { studentId, subjectId, progress },
+    });
+    res.json(updatedProgress);
+  } catch (error) {
+    res.status(500).json({ error: "Error actualizando progreso.", details: error.message });
+  }
+};
+
+// Eliminar progreso de materia
+const deleteStudentSubjectProgress = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await prisma.studentSubjectProgress.delete({ where: { id } });
+    res.json({ message: "Progreso eliminado correctamente." });
+  } catch (error) {
+    res.status(500).json({ error: "Error eliminando progreso.", details: error.message });
+  }
+};
+
+module.exports = { getStudentSubjectProgresses, getStudentSubjectProgressById, createStudentSubjectProgress, updateStudentSubjectProgress, deleteStudentSubjectProgress };

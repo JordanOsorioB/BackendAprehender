@@ -57,4 +57,19 @@ const deleteTeacher = async (req, res) => {
   }
 };
 
-module.exports = { getTeachers, createTeacher, getTeacherById, deleteTeacher };
+// Actualizar profesor
+const updateTeacher = async (req, res) => {
+  const { id } = req.params;
+  const { name, subjectId, schoolId } = req.body;
+  try {
+    const updatedTeacher = await prisma.teacher.update({
+      where: { id },
+      data: { name, subjectId, schoolId },
+    });
+    res.json(updatedTeacher);
+  } catch (error) {
+    res.status(500).json({ error: "Error actualizando profesor.", details: error.message });
+  }
+};
+
+module.exports = { getTeachers, createTeacher, getTeacherById, deleteTeacher, updateTeacher };
