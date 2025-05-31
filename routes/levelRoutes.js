@@ -27,11 +27,23 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - order
+ *               - unitId
  *             properties:
- *               nombre:
+ *               name:
  *                 type: string
- *               experiencia:
+ *                 description: Nombre del nivel
+ *               description:
+ *                 type: string
+ *                 description: Descripción del nivel
+ *               order:
  *                 type: integer
+ *                 description: Orden del nivel
+ *               unitId:
+ *                 type: integer
+ *                 description: ID de la unidad a la que pertenece
  *     responses:
  *       200:
  *         description: Nivel creado

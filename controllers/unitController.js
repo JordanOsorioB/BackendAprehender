@@ -29,11 +29,11 @@ const getUnitById = async (req, res) => {
  // Crear una nueva Unit
 
 const createUnit = async (req, res) => {
-  const { name } = req.body;
-  if (!name) return res.status(400).json({ error: "Campo 'name' es obligatorio." });
+  const { title, description, order, subjectId, unitId } = req.body;
+  if (!title || !description || order === undefined || !subjectId || unitId === undefined) return res.status(400).json({ error: "Campos 'title', 'description', 'order', 'subjectId' y 'unitId' son obligatorios." });
 
   try {
-    const newUnit = await prisma.unit.create({ data: { name } });
+    const newUnit = await prisma.unit.create({ data: { title, description, order, subjectId, unitId } });
     res.json({ message: "Unidad creada.", unit: newUnit });
   } catch (error) {
     res.status(500).json({ error: "Error creando unidad.", details: error.message });

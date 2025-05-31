@@ -28,11 +28,11 @@ const getLevelById = async (req, res) => {
  // Crear un nuevo Level
 
 const createLevel = async (req, res) => {
-  const { name } = req.body;
-  if (!name) return res.status(400).json({ error: "Campo 'name' es obligatorio." });
+  const { name, description, order, unitId } = req.body;
+  if (!name || order === undefined || unitId === undefined) return res.status(400).json({ error: "Campos 'name', 'order' y 'unitId' son obligatorios." });
 
   try {
-    const newLevel = await prisma.level.create({ data: { name } });
+    const newLevel = await prisma.level.create({ data: { name, description, order, unitId } });
     res.json({ message: "Nivel creado.", level: newLevel });
   } catch (error) {
     res.status(500).json({ error: "Error creando nivel.", details: error.message });

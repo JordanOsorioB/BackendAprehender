@@ -34,11 +34,12 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
  *             properties:
- *               nombre:
+ *               name:
  *                 type: string
- *               direccion:
- *                 type: string
+ *                 description: Nombre de la escuela
  *     responses:
  *       200:
  *         description: Escuela creada
@@ -70,11 +71,12 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
  *             properties:
- *               nombre:
+ *               name:
  *                 type: string
- *               direccion:
- *                 type: string
+ *                 description: Nombre de la escuela
  *     responses:
  *       200:
  *         description: Escuela actualizada

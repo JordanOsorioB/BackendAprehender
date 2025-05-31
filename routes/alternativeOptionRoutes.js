@@ -33,11 +33,20 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - text
+ *               - isCorrect
+ *               - exerciseContentId
  *             properties:
- *               texto:
+ *               text:
  *                 type: string
- *               esCorrecta:
+ *                 description: Texto de la opción
+ *               isCorrect:
  *                 type: boolean
+ *                 description: Indica si la opción es correcta
+ *               exerciseContentId:
+ *                 type: integer
+ *                 description: ID del contenido de ejercicio al que pertenece
  *     responses:
  *       200:
  *         description: Opción alternativa creada
@@ -70,10 +79,15 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               texto:
+ *               text:
  *                 type: string
- *               esCorrecta:
+ *                 description: Texto de la opción
+ *               isCorrect:
  *                 type: boolean
+ *                 description: Indica si la opción es correcta
+ *               exerciseContentId:
+ *                 type: integer
+ *                 description: ID del contenido de ejercicio al que pertenece
  *     responses:
  *       200:
  *         description: Opción alternativa actualizada

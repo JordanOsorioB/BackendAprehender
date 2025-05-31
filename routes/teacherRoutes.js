@@ -32,14 +32,27 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - subjectId
+ *               - schoolId
  *             properties:
- *               nombre:
+ *               name:
  *                 type: string
- *               email:
+ *                 description: Nombre del profesor
+ *               subjectId:
  *                 type: string
+ *                 description: ID de la materia asignada al profesor
+ *               schoolId:
+ *                 type: string
+ *                 description: ID de la escuela a la que pertenece el profesor
  *     responses:
  *       200:
- *         description: Profesor creado
+ *         description: Profesor creado exitosamente
+ *       400:
+ *         description: Faltan campos obligatorios
+ *       500:
+ *         description: Error al crear el profesor
  * /teachers/{id}:
  *   get:
  *     tags: [Teachers]

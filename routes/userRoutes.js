@@ -33,11 +33,19 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - password
  *             properties:
- *               nombre:
- *                 type: string
  *               email:
  *                 type: string
+ *                 description: Correo electrónico del usuario
+ *               password:
+ *                 type: string
+ *                 description: Contraseña del usuario
+ *               schoolId:
+ *                 type: string
+ *                 description: ID de la escuela (opcional)
  *     responses:
  *       200:
  *         description: Usuario creado
@@ -70,10 +78,15 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               nombre:
- *                 type: string
  *               email:
  *                 type: string
+ *                 description: Correo electrónico del usuario
+ *               password:
+ *                 type: string
+ *                 description: Contraseña del usuario
+ *               schoolId:
+ *                 type: string
+ *                 description: ID de la escuela (opcional)
  *     responses:
  *       200:
  *         description: Usuario actualizado

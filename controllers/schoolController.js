@@ -29,23 +29,16 @@ const getSchoolByCode = async (req, res) => {
 
 // Crear una nueva escuela
 const createSchool = async (req, res) => {
-  const { name, address, code } = req.body;
-  if (!name || !address || !code) {
+  const { name } = req.body;
+  if (!name) {
     return res
       .status(400)
-      .json({ error: "⚠️ Todos los campos son obligatorios." });
+      .json({ error: "⚠️ El campo 'name' es obligatorio." });
   }
 
   try {
-    const existingSchool = await prisma.school.findUnique({ where: { code } });
-    if (existingSchool) {
-      return res
-        .status(400)
-        .json({ error: "⚠️ El código de la escuela ya está registrado." });
-    }
-
     const school = await prisma.school.create({
-      data: { name, address, code },
+      data: { name },
     });
 
     res.json({ message: "✅ Escuela creada correctamente.", school });

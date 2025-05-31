@@ -27,17 +27,20 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - schoolId
+ *               - teacherId
  *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nombre del curso
+ *               schoolId:
+ *                 type: string
+ *                 description: ID de la escuela
  *               teacherId:
  *                 type: string
- *               establecimiento:
- *                 type: string
- *               direccion:
- *                 type: string
- *               curso:
- *                 type: string
- *               asignatura:
- *                 type: string
+ *                 description: ID del profesor
  *     responses:
  *       200:
  *         description: Curso creado

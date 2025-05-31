@@ -27,15 +27,28 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - title
+ *               - description
+ *               - order
+ *               - subjectId
+ *               - unitId
  *             properties:
  *               title:
  *                 type: string
+ *                 description: Título de la unidad
  *               description:
  *                 type: string
+ *                 description: Descripción de la unidad
  *               order:
  *                 type: integer
+ *                 description: Orden de la unidad
  *               subjectId:
  *                 type: string
+ *                 description: ID de la asignatura
+ *               unitId:
+ *                 type: integer
+ *                 description: ID de la unidad principal (si aplica)
  *     responses:
  *       200:
  *         description: Unidad creada
