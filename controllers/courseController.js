@@ -3,22 +3,20 @@ const prisma = new PrismaClient();
 
 // Registrar un curso
 const createCourse = async (req, res) => {
-  const { teacherId, establecimiento, direccion, curso, asignatura } = req.body;
+  const { name, schoolId, teacherId } = req.body;
 
-  if (!teacherId || !establecimiento || !direccion || !curso || !asignatura) {
+  if (!name || !schoolId || !teacherId) {
     return res
       .status(400)
-      .json({ error: "⚠️ Todos los campos son obligatorios." });
+      .json({ error: "⚠️ Todos los campos son obligatorios (name, schoolId, teacherId)." });
   }
 
   try {
     const newCourse = await prisma.course.create({
       data: {
+        name,
+        schoolId,
         teacherId,
-        school: establecimiento,
-        address: direccion,
-        grade: curso,
-        subject: asignatura,
       },
     });
 

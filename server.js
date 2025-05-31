@@ -21,6 +21,8 @@ const alternativeOptionRoutes = require("./routes/alternativeOptionRoutes");
 const developmentContentRoutes = require("./routes/developmentContentRoutes");
 const pairingContentRoutes = require("./routes/pairingContentRoutes");
 const pairingPairRoutes = require("./routes/pairingPairRoutes");
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 // Middleware
 app.use(cors());
@@ -58,13 +60,28 @@ app.use("/development-contents", developmentContentRoutes);
 app.use("/pairing-contents", pairingContentRoutes);
 app.use("/pairing-pairs", pairingPairRoutes);
 
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'API Documentación',
+      version: '1.0.0',
+      description: 'Documentación de la API del backend',
+    },
+  },
+  apis: ['./routes/*.js', './controllers/*.js'],
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
+  docExpansion: 'none',
+  customCss: '.swagger-ui { margin-bottom: 60px; }'
+}));
 
 applyMigrations();
-// Configuración del puerto para Render
-const PORT = process.env.PORT || 3000; // ⚠️ Cambia esto
+const PORT = process.env.PORT || 3000; 
 console.log("DATABASE_URL:", process.env.DATABASE_URL);
 
 app.listen(PORT, "0.0.0.0", () => {
-  // 👈 IMPORTANTE: Agrega "0.0.0.0"
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });

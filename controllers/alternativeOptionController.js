@@ -31,15 +31,15 @@ const getAlternativeOptionById = async (req, res) => {
  // Crear nueva AlternativeOption
  
 const createAlternativeOption = async (req, res) => {
-  const { text, exerciseId, isCorrect } = req.body;
-  if (!text || !exerciseId) return res.status(400).json({ error: "Campos 'text' y 'exerciseId' son obligatorios." });
+  const { text, isCorrect, exerciseContentId } = req.body;
+  if (!text || isCorrect === undefined || exerciseContentId === undefined) return res.status(400).json({ error: "Campos 'text', 'isCorrect' y 'exerciseContentId' son obligatorios." });
 
   try {
     const newOption = await prisma.alternativeOption.create({
       data: {
         text,
-        exerciseId: parseInt(exerciseId),
-        isCorrect: isCorrect ?? false,
+        isCorrect,
+        exerciseContentId,
       },
     });
     res.json({ message: "AlternativeOption creada.", alternativeOption: newOption });

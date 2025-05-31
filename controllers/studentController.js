@@ -80,6 +80,41 @@ const getStudentCourses = async (req, res) => {
   }
 };
 
+// Obtener toda la info anidada de un estudiante (mock style)
+const getStudentFullData = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const student = await prisma.student.findUnique({
+      where: { id },
+      include: {
+        subjectProgress: {
+          include: {
+            subject: {
+              include: {
+                units: {
+                  include: {
+                    exercises: {
+                      include: {
+                        states: {
+                          where: { studentId: id }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    if (!student) return res.status(404).json({ error: "Estudiante no encontrado." });
+    res.json(student);
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo datos completos del estudiante.", details: error.message });
+  }
+};
+
 module.exports = {
   getStudents,
   getStudentById,
@@ -87,4 +122,5 @@ module.exports = {
   updateStudent,
   deleteStudent,
   getStudentCourses,
+  getStudentFullData,
 };
