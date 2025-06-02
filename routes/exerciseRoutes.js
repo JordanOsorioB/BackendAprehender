@@ -10,16 +10,22 @@ const exerciseController = require('../controllers/exerciseController');
  */
 /**
  * @swagger
- * /exercises:
+ * /api/exercises:
  *   get:
  *     tags: [Exercises]
- *     summary: Obtiene todos los ejercicios
+ *     summary: Obtener todos los ejercicios
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de ejercicios
+ *       401:
+ *         description: No autorizado
  *   post:
  *     tags: [Exercises]
  *     summary: Crea un nuevo ejercicio
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -44,10 +50,15 @@ const exerciseController = require('../controllers/exerciseController');
  *     responses:
  *       200:
  *         description: Ejercicio creado
- * /exercises/{id}:
+ *       401:
+ *         description: No autorizado
+ *
+ * /api/exercises/{id}:
  *   get:
  *     tags: [Exercises]
- *     summary: Obtiene un ejercicio por ID
+ *     summary: Obtener un ejercicio por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -57,6 +68,52 @@ const exerciseController = require('../controllers/exerciseController');
  *     responses:
  *       200:
  *         description: Ejercicio encontrado
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Ejercicio no encontrado
+ *   put:
+ *     tags: [Exercises]
+ *     summary: Actualiza un ejercicio por ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Título del ejercicio
+ *     responses:
+ *       200:
+ *         description: Ejercicio actualizado
+ *       401:
+ *         description: No autorizado
+ *   delete:
+ *     tags: [Exercises]
+ *     summary: Elimina un ejercicio por ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Ejercicio eliminado
+ *       401:
+ *         description: No autorizado
  */
 
 router.get('/', exerciseController.getExercises);

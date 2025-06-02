@@ -17,16 +17,22 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /alternative-options:
+ * /api/alternative-options:
  *   get:
  *     tags: [AlternativeOptions]
- *     summary: Obtiene todas las opciones alternativas
+ *     summary: Obtener todas las opciones alternativas
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de opciones alternativas
+ *       401:
+ *         description: No autorizado
  *   post:
  *     tags: [AlternativeOptions]
  *     summary: Crea una nueva opción alternativa
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -50,10 +56,15 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Opción alternativa creada
- * /alternative-options/{id}:
+ *       401:
+ *         description: No autorizado
+ *
+ * /api/alternative-options/{id}:
  *   get:
  *     tags: [AlternativeOptions]
- *     summary: Obtiene una opción alternativa por ID
+ *     summary: Obtener una opción alternativa por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -63,9 +74,15 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Opción alternativa encontrada
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Opción alternativa no encontrada
  *   put:
  *     tags: [AlternativeOptions]
  *     summary: Actualiza una opción alternativa por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -82,18 +99,16 @@ const router = express.Router();
  *               text:
  *                 type: string
  *                 description: Texto de la opción
- *               isCorrect:
- *                 type: boolean
- *                 description: Indica si la opción es correcta
- *               exerciseContentId:
- *                 type: integer
- *                 description: ID del contenido de ejercicio al que pertenece
  *     responses:
  *       200:
  *         description: Opción alternativa actualizada
+ *       401:
+ *         description: No autorizado
  *   delete:
  *     tags: [AlternativeOptions]
  *     summary: Elimina una opción alternativa por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -103,6 +118,8 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Opción alternativa eliminada
+ *       401:
+ *         description: No autorizado
  */
 router.get("/", getAlternativeOptions);    // Obtener todas las opciones
 router.get("/:id", getAlternativeOptionById); // Obtener opción por ID

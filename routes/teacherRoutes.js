@@ -16,47 +16,44 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /teachers:
+ * /api/teachers:
  *   get:
  *     tags: [Teachers]
- *     summary: Obtiene todos los profesores
+ *     summary: Obtener todos los profesores
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de profesores
+ *       401:
+ *         description: No autorizado
  *   post:
  *     tags: [Teachers]
  *     summary: Crea un nuevo profesor
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - name
- *               - subjectId
- *               - schoolId
  *             properties:
  *               name:
  *                 type: string
  *                 description: Nombre del profesor
- *               subjectId:
- *                 type: string
- *                 description: ID de la materia asignada al profesor
- *               schoolId:
- *                 type: string
- *                 description: ID de la escuela a la que pertenece el profesor
  *     responses:
  *       200:
- *         description: Profesor creado exitosamente
- *       400:
- *         description: Faltan campos obligatorios
- *       500:
- *         description: Error al crear el profesor
- * /teachers/{id}:
+ *         description: Profesor creado
+ *       401:
+ *         description: No autorizado
+ *
+ * /api/teachers/{id}:
  *   get:
  *     tags: [Teachers]
- *     summary: Obtiene un profesor por ID
+ *     summary: Obtener un profesor por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -66,9 +63,41 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Profesor encontrado
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Profesor no encontrado
+ *   put:
+ *     tags: [Teachers]
+ *     summary: Actualiza un profesor por ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nombre del profesor
+ *     responses:
+ *       200:
+ *         description: Profesor actualizado
+ *       401:
+ *         description: No autorizado
  *   delete:
  *     tags: [Teachers]
  *     summary: Elimina un profesor por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -78,6 +107,8 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Profesor eliminado
+ *       401:
+ *         description: No autorizado
  */
 
 router.get("/", getTeachers);

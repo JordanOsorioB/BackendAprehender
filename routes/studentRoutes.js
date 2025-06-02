@@ -10,40 +10,44 @@ const studentController = require('../controllers/studentController');
  */
 /**
  * @swagger
- * /students:
+ * /api/students:
  *   get:
  *     tags: [Students]
- *     summary: Obtiene todos los estudiantes
+ *     summary: Obtener todos los estudiantes
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de estudiantes
+ *       401:
+ *         description: No autorizado
  *   post:
  *     tags: [Students]
  *     summary: Crea un nuevo estudiante
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - nombre
- *               - level
- *               - experience
  *             properties:
  *               nombre:
  *                 type: string
- *               level:
- *                 type: integer
- *               experience:
- *                 type: integer
+ *                 description: Nombre del estudiante
  *     responses:
  *       200:
  *         description: Estudiante creado
- * /students/{id}:
+ *       401:
+ *         description: No autorizado
+ *
+ * /api/students/{id}:
  *   get:
  *     tags: [Students]
- *     summary: Obtiene un estudiante por ID
+ *     summary: Obtener un estudiante por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -53,9 +57,15 @@ const studentController = require('../controllers/studentController');
  *     responses:
  *       200:
  *         description: Estudiante encontrado
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Estudiante no encontrado
  *   put:
  *     tags: [Students]
  *     summary: Actualiza un estudiante por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -78,9 +88,13 @@ const studentController = require('../controllers/studentController');
  *     responses:
  *       200:
  *         description: Estudiante actualizado
+ *       401:
+ *         description: No autorizado
  *   delete:
  *     tags: [Students]
  *     summary: Elimina un estudiante por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -90,6 +104,8 @@ const studentController = require('../controllers/studentController');
  *     responses:
  *       200:
  *         description: Estudiante eliminado
+ *       401:
+ *         description: No autorizado
  * /students/{id}/courses:
  *   get:
  *     tags: [Students]

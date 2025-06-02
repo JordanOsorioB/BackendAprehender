@@ -11,42 +11,99 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /levels:
+ * /api/levels:
  *   get:
  *     tags: [Levels]
- *     summary: Obtiene todos los niveles
+ *     summary: Obtener todos los niveles
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de niveles
+ *       401:
+ *         description: No autorizado
  *   post:
  *     tags: [Levels]
  *     summary: Crea un nuevo nivel
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - name
- *               - order
- *               - unitId
  *             properties:
  *               name:
  *                 type: string
  *                 description: Nombre del nivel
- *               description:
- *                 type: string
- *                 description: Descripción del nivel
- *               order:
- *                 type: integer
- *                 description: Orden del nivel
- *               unitId:
- *                 type: integer
- *                 description: ID de la unidad a la que pertenece
  *     responses:
  *       200:
  *         description: Nivel creado
+ *       401:
+ *         description: No autorizado
+ *
+ * /api/levels/{id}:
+ *   get:
+ *     tags: [Levels]
+ *     summary: Obtener un nivel por ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Nivel encontrado
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Nivel no encontrado
+ *   put:
+ *     tags: [Levels]
+ *     summary: Actualiza un nivel por ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nombre del nivel
+ *     responses:
+ *       200:
+ *         description: Nivel actualizado
+ *       401:
+ *         description: No autorizado
+ *   delete:
+ *     tags: [Levels]
+ *     summary: Elimina un nivel por ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Nivel eliminado
+ *       401:
+ *         description: No autorizado
  */
 
 router.post("/", createLevel); // Crear nuevo nivel

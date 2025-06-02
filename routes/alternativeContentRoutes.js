@@ -17,16 +17,28 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /alternative-contents:
+ * /api/alternative-contents:
  *   get:
- *     tags: [AlternativeContents]
  *     summary: Obtiene todos los contenidos de alternativas
+ *     tags: [AlternativeContents]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de contenidos de alternativas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       401:
+ *         description: No autorizado
  *   post:
- *     tags: [AlternativeContents]
  *     summary: Crea un nuevo contenido de alternativas
+ *     tags: [AlternativeContents]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -39,10 +51,15 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Contenido de alternativas creado
- * /alternative-contents/{id}:
+ *       401:
+ *         description: No autorizado
+ *
+ * /api/alternative-contents/{id}:
  *   get:
- *     tags: [AlternativeContents]
  *     summary: Obtiene un contenido de alternativas por ID
+ *     tags: [AlternativeContents]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -52,9 +69,13 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Contenido de alternativas encontrado
+ *       401:
+ *         description: No autorizado
  *   put:
- *     tags: [AlternativeContents]
  *     summary: Actualiza un contenido de alternativas por ID
+ *     tags: [AlternativeContents]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -73,9 +94,13 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Contenido de alternativas actualizado
+ *       401:
+ *         description: No autorizado
  *   delete:
- *     tags: [AlternativeContents]
  *     summary: Elimina un contenido de alternativas por ID
+ *     tags: [AlternativeContents]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -85,6 +110,8 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Contenido de alternativas eliminado
+ *       401:
+ *         description: No autorizado
  */
 router.get("/", getAlternativeContents);    // Obtener todos los contenidos
 router.get("/:id", getAlternativeContentById); // Obtener contenido por ID
