@@ -2,6 +2,8 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const { verifyToken } = require("./controllers/authController");
+const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const schoolRoutes = require("./routes/schoolRoutes");
@@ -24,18 +26,64 @@ const pairingPairRoutes = require("./routes/pairingPairRoutes");
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Rutas
-app.use("/users", userRoutes);
-app.use("/courses", courseRoutes);
+// Swagger primero, en /docs
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'API Documentación',
+      version: '1.0.0',
+      description: 'Documentación de la API del backend',
+    },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+    security: [{
+      bearerAuth: [],
+    }],
+  },
+  apis: ['./routes/*.js', './controllers/*.js'],
+};
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
+  docExpansion: 'none',
+  customCss: '.swagger-ui { margin-bottom: 60px; }'
+}));
 
 // Ruta de prueba
 app.get("/", (req, res) => {
   res.send("🚀 API funcionando correctamente.");
 });
+
+// Rutas públicas
+app.use('/api/auth', authRoutes);
+
+// Rutas protegidas bajo /api
+app.use('/api/users', verifyToken, userRoutes);
+app.use('/api/courses', verifyToken, courseRoutes);
+app.use('/api/schools', verifyToken, schoolRoutes);
+app.use('/api/teachers', verifyToken, teacherRoutes);
+app.use('/api/subjects', verifyToken, subjectRoutes);
+app.use('/api/students', verifyToken, studentRoutes);
+app.use('/api/exercises', verifyToken, exerciseRoutes);
+app.use('/api/units', verifyToken, unitRoutes);
+app.use('/api/levels', verifyToken, levelRoutes);
+app.use('/api/exercise-statuses', verifyToken, exerciseStatusRoutes);
+app.use('/api/exercise-contents', verifyToken, exerciseContentRoutes);
+app.use('/api/alternative-contents', verifyToken, alternativeContentRoutes);
+app.use('/api/alternative-options', verifyToken, alternativeOptionRoutes);
+app.use('/api/development-contents', verifyToken, developmentContentRoutes);
+app.use('/api/pairing-contents', verifyToken, pairingContentRoutes);
+app.use('/api/pairing-pairs', verifyToken, pairingPairRoutes);
 
 async function applyMigrations() {
   try {
@@ -45,38 +93,6 @@ async function applyMigrations() {
     console.error("❌ No se puede acceder a la base de datos:", error);
   }
 }
-app.use("/schools", schoolRoutes);
-app.use("/teachers", teacherRoutes);
-app.use("/subjects", subjectRoutes);
-app.use('/students', studentRoutes);
-app.use('/exercises', exerciseRoutes);
-app.use("/units", unitRoutes);
-app.use("/levels", levelRoutes);
-app.use("/exercise-statuses", exerciseStatusRoutes);
-app.use("/exercise-contents", exerciseContentRoutes);
-app.use("/alternative-contents", alternativeContentRoutes);
-app.use("/alternative-options", alternativeOptionRoutes);
-app.use("/development-contents", developmentContentRoutes);
-app.use("/pairing-contents", pairingContentRoutes);
-app.use("/pairing-pairs", pairingPairRoutes);
-
-const swaggerOptions = {
-  swaggerDefinition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'API Documentación',
-      version: '1.0.0',
-      description: 'Documentación de la API del backend',
-    },
-  },
-  apis: ['./routes/*.js', './controllers/*.js'],
-};
-
-const swaggerDocs = swaggerJsdoc(swaggerOptions);
-app.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerDocs, {
-  docExpansion: 'none',
-  customCss: '.swagger-ui { margin-bottom: 60px; }'
-}));
 
 applyMigrations();
 const PORT = process.env.PORT || 3000; 

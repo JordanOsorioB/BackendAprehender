@@ -18,24 +18,28 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /schools:
+ * /api/schools:
  *   get:
  *     tags: [Schools]
- *     summary: Obtiene todas las escuelas
+ *     summary: Obtener todas las escuelas
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de escuelas
+ *       401:
+ *         description: No autorizado
  *   post:
  *     tags: [Schools]
  *     summary: Crea una nueva escuela
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - name
  *             properties:
  *               name:
  *                 type: string
@@ -43,10 +47,15 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Escuela creada
- * /schools/{id}:
+ *       401:
+ *         description: No autorizado
+ *
+ * /api/schools/{id}:
  *   get:
  *     tags: [Schools]
- *     summary: Obtiene una escuela por ID
+ *     summary: Obtener una escuela por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -56,9 +65,15 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Escuela encontrada
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Escuela no encontrada
  *   put:
  *     tags: [Schools]
  *     summary: Actualiza una escuela por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -71,8 +86,6 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - name
  *             properties:
  *               name:
  *                 type: string
@@ -80,9 +93,13 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Escuela actualizada
+ *       401:
+ *         description: No autorizado
  *   delete:
  *     tags: [Schools]
  *     summary: Elimina una escuela por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -92,6 +109,8 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Escuela eliminada
+ *       401:
+ *         description: No autorizado
  * /schools/code/{code}:
  *   get:
  *     tags: [Schools]

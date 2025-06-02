@@ -11,16 +11,22 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /exercise-statuses:
+ * /api/exercise-statuses:
  *   get:
  *     tags: [ExerciseStates]
- *     summary: Obtiene todos los estados de ejercicios
+ *     summary: Obtener todos los estados de ejercicios
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de estados de ejercicios
+ *       401:
+ *         description: No autorizado
  *   post:
  *     tags: [ExerciseStates]
  *     summary: Crea un nuevo estado de ejercicio
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -48,6 +54,8 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Estado de ejercicio creado
+ *       401:
+ *         description: No autorizado
  */
 router.post("/", createExerciseState); // Crear nuevo estado de ejercicio
 router.get("/", getExerciseStates);   // Obtener todos los estados

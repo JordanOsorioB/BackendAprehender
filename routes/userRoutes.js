@@ -17,16 +17,22 @@ const router = express.Router();
  */
 /**
  * @swagger
- * /users:
+ * /api/users:
  *   get:
  *     tags: [Users]
- *     summary: Obtiene todos los usuarios
+ *     summary: Obtener todos los usuarios
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de usuarios
+ *       401:
+ *         description: No autorizado
  *   post:
  *     tags: [Users]
  *     summary: Crea un nuevo usuario
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -49,10 +55,15 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Usuario creado
- * /users/{id}:
+ *       401:
+ *         description: No autorizado
+ *
+ * /api/users/{id}:
  *   get:
  *     tags: [Users]
- *     summary: Obtiene un usuario por ID
+ *     summary: Obtener un usuario por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -62,9 +73,15 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Usuario encontrado
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Usuario no encontrado
  *   put:
  *     tags: [Users]
  *     summary: Actualiza un usuario por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -90,9 +107,13 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Usuario actualizado
+ *       401:
+ *         description: No autorizado
  *   delete:
  *     tags: [Users]
  *     summary: Elimina un usuario por ID
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -102,6 +123,8 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Usuario eliminado
+ *       401:
+ *         description: No autorizado
  */
 
 router.get("/", getUsers);
