@@ -84,32 +84,53 @@ const getStudentCourses = async (req, res) => {
 const getStudentFullData = async (req, res) => {
   const { id } = req.params;
   try {
-    const student = await prisma.student.findUnique({
-      where: { id },
-      include: {
-        subjectProgress: {
-          include: {
-            subject: {
-              include: {
-                units: {
-                  include: {
-                    exercises: {
-                      include: {
-                        states: {
-                          where: { studentId: id }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    });
+    // 1. Buscar el estudiante base
+    const student = await prisma.student.findUnique({ where: { id } });
     if (!student) return res.status(404).json({ error: "Estudiante no encontrado." });
-    res.json(student);
+
+    // 2. Buscar subjectProgress (puede ser vacío)
+    const subjectProgress = await prisma.studentSubjectProgress.findMany({
+      where: { studentId: id },
+    });
+
+    // 3. Para cada subjectProgress, buscar el subject y sus unidades
+    const subjectProgressFull = await Promise.all(subjectProgress.map(async (sp) => {
+      // Buscar subject
+      const subject = await prisma.subject.findUnique({
+        where: { id: sp.subjectId },
+      });
+      // Buscar unidades de la asignatura
+      const subjectUnits = await prisma.subjectUnit.findMany({
+        where: { subjectId: sp.subjectId },
+      });
+      // Para cada unidad, buscar la unidad y sus ejercicios
+      const units = await Promise.all(subjectUnits.map(async (su) => {
+        const unit = await prisma.unit.findUnique({ where: { id: su.unitId } });
+        if (!unit) return { id: su.unitId, titulo: 'Sin unidad', ejercicios: [] };
+        // Buscar ejercicios de la unidad
+        const exercises = await prisma.exercise.findMany({ where: { subjectUnitId: su.id } });
+        // Para cada ejercicio, buscar estados
+        const exercisesFull = await Promise.all(exercises.map(async (ex) => {
+          const states = await prisma.exerciseState.findMany({
+            where: { exerciseId: ex.id, studentId: id },
+          });
+          return { ...ex, states: states || [] };
+        }));
+        return { ...unit, ejercicios: exercisesFull };
+      }));
+      return {
+        ...sp,
+        subject: subject ? { ...subject, units } : { id: sp.subjectId, nombre: 'Sin asignatura', units: [] },
+      };
+    }));
+
+    // 4. Armar el objeto final
+    const result = {
+      ...student,
+      subjectProgress: subjectProgressFull.length > 0 ? subjectProgressFull : [],
+    };
+    console.log('Resultado de student:', result);
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: "Error obteniendo datos completos del estudiante.", details: error.message });
   }
