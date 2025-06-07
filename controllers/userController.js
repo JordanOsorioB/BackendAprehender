@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const bcrypt = require("bcryptjs");
 
 async function testDB() {
   try {
@@ -17,8 +18,10 @@ const getUsers = async (req, res) => {
   try {
     console.log("🔍 Consultando usuarios...");
     const users = await prisma.user.findMany();
+    // Excluir la contraseña de cada usuario
+    const usersWithoutPassword = users.map(({ password, ...user }) => user);
     console.log("✅ Usuarios obtenidos correctamente.");
-    res.json(users);
+    res.json(usersWithoutPassword);
   } catch (error) {
     console.error("❌ ERROR Prisma - No se pudo obtener usuarios:", error);
     res.status(500).json({
@@ -42,11 +45,11 @@ const createUser = async (req, res) => {
   }
 
   // Verificar que el rol sea válido
-  const validRoles = ["ADMIN", "TEACHER", "STUDENT"];
+  const validRoles = ["ADMIN", "TEACHER", "STUDENT", "SUPERADMIN"];
   if (!validRoles.includes(role)) {
     return res
       .status(400)
-      .json({ error: "⚠️ Rol inválido. Debe ser ADMIN, TEACHER o STUDENT." });
+      .json({ error: "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT o SUPERADMIN." });
   }
 
   try {
@@ -65,18 +68,24 @@ const createUser = async (req, res) => {
         });
     }
 
+    // Encriptar la contraseña antes de guardar
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     // Crear usuario con el rol especificado
     const newUser = await prisma.user.create({
       data: {
         username,
         email,
-        password,
+        password: hashedPassword, // Guardar la contraseña encriptada
         role,
         schoolId, // Puede ser nulo si el usuario no pertenece a ninguna escuela
       },
     });
 
-    res.json({ message: "✅ Usuario registrado con éxito.", user: newUser });
+    // Excluir la contraseña en la respuesta
+    const { password: _, ...userWithoutPassword } = newUser;
+
+    res.json({ message: "✅ Usuario registrado con éxito.", user: userWithoutPassword });
   } catch (error) {
     console.error("Error en createUser:", error);
     res
@@ -92,7 +101,9 @@ const getUserById = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user)
       return res.status(404).json({ error: "⚠️ Usuario no encontrado." });
-    res.json(user);
+    // Excluir la contraseña
+    const { password, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
   } catch (error) {
     res.status(500).json({ error: "⚠️ Error obteniendo usuario." });
   }
@@ -104,19 +115,30 @@ const updateUser = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   // Validación de rol
-  const validRoles = ["ADMIN", "TEACHER", "STUDENT"];
+  const validRoles = ["ADMIN", "TEACHER", "STUDENT", "SUPERADMIN"];
   if (role && !validRoles.includes(role)) {
     return res
       .status(400)
-      .json({ error: "⚠️ Rol inválido. Debe ser ADMIN, TEACHER o STUDENT." });
+      .json({ error: "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT o SUPERADMIN." });
   }
 
   try {
+    let dataToUpdate = { name, email, role };
+
+    // Si se envía una nueva contraseña, encriptarla
+    if (password) {
+      dataToUpdate.password = await bcrypt.hash(password, 10);
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: { name, email, password, role },
+      data: dataToUpdate,
     });
-    res.json(updatedUser);
+
+    // Excluir la contraseña en la respuesta
+    const { password: _, ...userWithoutPassword } = updatedUser;
+
+    res.json(userWithoutPassword);
   } catch (error) {
     res.status(500).json({ error: "⚠️ Error actualizando usuario." });
   }

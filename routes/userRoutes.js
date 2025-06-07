@@ -16,7 +16,7 @@ const router = express.Router();
  *   description: Endpoints para usuarios
  */
 /**
- * @swagger
+ *  @swagger
  * /api/users:
  *   get:
  *     tags: [Users]
@@ -42,6 +42,7 @@ const router = express.Router();
  *             required:
  *               - email
  *               - password
+ *               - role
  *             properties:
  *               email:
  *                 type: string
@@ -52,6 +53,10 @@ const router = express.Router();
  *               schoolId:
  *                 type: string
  *                 description: ID de la escuela (opcional)
+ *               role:
+ *                 type: string
+ *                 enum: [ADMIN, TEACHER, STUDENT, SUPERADMIN]
+ *                 description: Rol del usuario
  *     responses:
  *       200:
  *         description: Usuario creado
