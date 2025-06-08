@@ -33,7 +33,7 @@ const getUsers = async (req, res) => {
 
 // Crear un nuevo usuario con validación de rol
 const createUser = async (req, res) => {
-  const { username, email, password, role, schoolId } = req.body;
+  const { username, email, password, role, schoolId, studentId } = req.body;
 
   if (!username || !email || !password || !role) {
     return res
@@ -45,11 +45,11 @@ const createUser = async (req, res) => {
   }
 
   // Verificar que el rol sea válido
-  const validRoles = ["ADMIN", "TEACHER", "STUDENT", "SUPERADMIN"];
+  const validRoles = ["ADMIN", "TEACHER", "STUDENT", "SUPERADMIN", "UTP"];
   if (!validRoles.includes(role)) {
     return res
       .status(400)
-      .json({ error: "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT o SUPERADMIN." });
+      .json({ error: "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT, SUPERADMIN o UTP." });
   }
 
   try {
@@ -71,15 +71,20 @@ const createUser = async (req, res) => {
     // Encriptar la contraseña antes de guardar
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Crear usuario con el rol especificado
+    // Crear usuario con el rol especificado y opcionalmente studentId
+    const userData = {
+      username,
+      email,
+      password: hashedPassword,
+      role,
+      schoolId,
+    };
+    if (studentId) {
+      userData.studentId = studentId;
+    }
+
     const newUser = await prisma.user.create({
-      data: {
-        username,
-        email,
-        password: hashedPassword, // Guardar la contraseña encriptada
-        role,
-        schoolId, // Puede ser nulo si el usuario no pertenece a ninguna escuela
-      },
+      data: userData,
     });
 
     // Excluir la contraseña en la respuesta

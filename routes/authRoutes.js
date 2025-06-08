@@ -16,12 +16,12 @@ const { login } = require('../controllers/authController');
  *           schema:
  *             type: object
  *             required:
- *               - nick
+ *               - username
  *               - password
  *             properties:
- *               nick:
+ *               username:
  *                 type: string
- *                 description: Nickname del usuario
+ *                 description: Nombre de usuario
  *               password:
  *                 type: string
  *                 description: Contraseña del usuario
@@ -40,7 +40,7 @@ const { login } = require('../controllers/authController');
  *                   properties:
  *                     id:
  *                       type: string
- *                     nick:
+ *                     username:
  *                       type: string
  *                     role:
  *                       type: string

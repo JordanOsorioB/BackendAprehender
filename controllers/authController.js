@@ -5,11 +5,11 @@ const prisma = new PrismaClient();
 
 const login = async (req, res) => {
   try {
-    const { nick, password } = req.body;
+    const { username, password } = req.body;
 
-    // Buscar usuario por nick
+    // Buscar usuario por username
     const user = await prisma.user.findFirst({
-      where: { nick },
+      where: { username },
       include: {
         teacher: true,
         student: true
@@ -21,7 +21,7 @@ const login = async (req, res) => {
     }
 
     // Verificar contraseña
-    const validPassword = password === user.password;
+    const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
@@ -30,7 +30,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { 
         userId: user.id,
-        nick: user.nick,
+        username: user.username,
         role: user.role,
         teacherId: user.teacherId,
         studentId: user.studentId
@@ -44,7 +44,7 @@ const login = async (req, res) => {
       token,
       user: {
         id: user.id,
-        nick: user.nick,
+        username: user.username,
         email: user.email,
         role: user.role,
         teacher: user.teacher,

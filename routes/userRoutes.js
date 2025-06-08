@@ -40,10 +40,14 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             required:
+ *               - username
  *               - email
  *               - password
  *               - role
  *             properties:
+ *               username:
+ *                 type: string
+ *                 description: Nombre de usuario
  *               email:
  *                 type: string
  *                 description: Correo electrónico del usuario
@@ -57,6 +61,9 @@ const router = express.Router();
  *                 type: string
  *                 enum: [ADMIN, TEACHER, STUDENT, SUPERADMIN]
  *                 description: Rol del usuario
+ *               studentId:
+ *                 type: string
+ *                 description: ID del estudiante (opcional)
  *     responses:
  *       200:
  *         description: Usuario creado

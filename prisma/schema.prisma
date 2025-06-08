@@ -12,80 +12,80 @@ model Student {
   nombre            String
   level             Int
   experience        Int
-  profileType       ProfileType             @default(STUDENT)
+  profileType       ProfileType              @default(STUDENT)
   courseEnrollments CourseEnrollment[]
-  subjectProgress   StudentSubjectProgress[]
   exerciseStates    ExerciseState[]
+  subjectProgress   StudentSubjectProgress[]
   unitProgress      StudentUnitProgress[]
   user              User?
 }
 
 model CourseEnrollment {
   id        String   @id @default(cuid())
-  student   Student  @relation(fields: [studentId], references: [id])
   studentId String
-  course    Course   @relation(fields: [courseId], references: [id])
   courseId  String
   createdAt DateTime @default(now())
+  course    Course   @relation(fields: [courseId], references: [id])
+  student   Student  @relation(fields: [studentId], references: [id])
 }
 
 model School {
   id       String    @id @default(cuid())
   name     String
-  users    User[]    @relation("UserToSchool")
-  teachers Teacher[]
   courses  Course[]
+  teachers Teacher[]
+  users    User[]    @relation("UserToSchool")
 }
 
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String
-  nick      String   @unique @default("nickname")
-  role      UserRole @default(STUDENT)
-  school    School?  @relation("UserToSchool", fields: [schoolId], references: [id])
   schoolId  String?
-  teacherId String?  @unique
+  role      UserRole @default(STUDENT)
   studentId String?  @unique
-  teacher   Teacher? @relation(fields: [teacherId], references: [id])
+  teacherId String?  @unique
+  username  String   @unique @default("nickname")
+  school    School?  @relation("UserToSchool", fields: [schoolId], references: [id])
   student   Student? @relation(fields: [studentId], references: [id])
+  teacher   Teacher? @relation(fields: [teacherId], references: [id])
 }
 
 model Teacher {
   id          String      @id @default(cuid())
   name        String
-  profileType ProfileType @default(TEACHER)
-  subject     Subject     @relation(fields: [subjectId], references: [id])
   subjectId   String
-  school      School      @relation(fields: [schoolId], references: [id])
   schoolId    String
+  profileType ProfileType @default(TEACHER)
   courses     Course[]
+  school      School      @relation(fields: [schoolId], references: [id])
+  subject     Subject     @relation(fields: [subjectId], references: [id])
   user        User?
 }
 
 model Subject {
   id              String                   @id @default(cuid())
   name            String
-  teachers        Teacher[]
-  units           SubjectUnit[]
   studentProgress StudentSubjectProgress[]
+  units           SubjectUnit[]
+  teachers        Teacher[]
 }
 
 model Course {
   id          String             @id @default(cuid())
   name        String
-  school      School             @relation(fields: [schoolId], references: [id])
   schoolId    String
-  teacher     Teacher            @relation(fields: [teacherId], references: [id])
   teacherId   String
-  progress    Progress[]
+  school      School             @relation(fields: [schoolId], references: [id])
+  teacher     Teacher            @relation(fields: [teacherId], references: [id])
   enrollments CourseEnrollment[]
+  progress    Progress[]
 }
 
 model Progress {
   id       String @id @default(cuid())
-  course   Course @relation(fields: [courseId], references: [id])
   courseId String
+  course   Course @relation(fields: [courseId], references: [id])
 }
 
 model SubjectUnit {
@@ -93,13 +93,12 @@ model SubjectUnit {
   title        String
   description  String
   order        Int
-  subject      Subject               @relation(fields: [subjectId], references: [id])
   subjectId    String
+  unitId       Int
   exercises    Exercise[]
   unitProgress StudentUnitProgress[] @relation("ProgressToSubjectUnit")
-
-  unit   Unit @relation("UnitSubjectUnits", fields: [unitId], references: [id])
-  unitId Int
+  subject      Subject               @relation(fields: [subjectId], references: [id])
+  unit         Unit                  @relation("UnitSubjectUnits", fields: [unitId], references: [id])
 }
 
 model Exercise {
@@ -109,18 +108,16 @@ model Exercise {
   type             ExerciseType
   difficulty       String
   totalExperience  Int
-  subjectUnit      SubjectUnit       @relation(fields: [subjectUnitId], references: [id])
   subjectUnitId    Int
-  states           ExerciseState[]
   content          Json
+  subjectUnit      SubjectUnit       @relation(fields: [subjectUnitId], references: [id])
   exerciseContents ExerciseContent[]
+  states           ExerciseState[]
 }
 
 model ExerciseState {
   id               String   @id @default(cuid())
-  student          Student  @relation(fields: [studentId], references: [id])
   studentId        String
-  exercise         Exercise @relation(fields: [exerciseId], references: [id])
   exerciseId       String
   completed        Boolean
   attempts         Int
@@ -128,41 +125,40 @@ model ExerciseState {
   correctAnswers   Int
   experienceEarned Int
   locked           Boolean
+  respuesta        String?
+  exercise         Exercise @relation(fields: [exerciseId], references: [id])
+  student          Student  @relation(fields: [studentId], references: [id])
 }
 
 model StudentSubjectProgress {
   id        String  @id @default(cuid())
-  student   Student @relation(fields: [studentId], references: [id])
   studentId String
-  subject   Subject @relation(fields: [subjectId], references: [id])
   subjectId String
   progress  Int
+  student   Student @relation(fields: [studentId], references: [id])
+  subject   Subject @relation(fields: [subjectId], references: [id])
 }
 
 model StudentUnitProgress {
-  id        String  @id @default(cuid())
-  student   Student @relation(fields: [studentId], references: [id])
-  studentId String
-
-  subjectUnit SubjectUnit @relation("ProgressToSubjectUnit", fields: [unitId], references: [id])
+  id          String      @id @default(cuid())
+  studentId   String
   unitId      Int
-
-  unit     Unit @relation("ProgressToUnit", fields: [unitFkId], references: [id])
-  unitFkId Int
-
-  progress Int
+  unitFkId    Int
+  progress    Int
+  student     Student     @relation(fields: [studentId], references: [id])
+  unit        Unit        @relation("ProgressToUnit", fields: [unitFkId], references: [id])
+  subjectUnit SubjectUnit @relation("ProgressToSubjectUnit", fields: [unitId], references: [id])
 }
 
 model Unit {
-  id          Int    @id @default(autoincrement())
-  title       String
-  description String
-  order       Int
-
-  subjectUnits       SubjectUnit[]         @relation("UnitSubjectUnits")
+  id                 Int                   @id @default(autoincrement())
+  title              String
+  description        String
+  order              Int
+  developmentContent DevelopmentContent[]
   levels             Level[]
   unitProgress       StudentUnitProgress[] @relation("ProgressToUnit")
-  developmentContent DevelopmentContent[]
+  subjectUnits       SubjectUnit[]         @relation("UnitSubjectUnits")
 }
 
 model Level {
@@ -170,8 +166,8 @@ model Level {
   name         String
   description  String?
   order        Int
-  unit         Unit          @relation(fields: [unitId], references: [id])
   unitId       Int
+  unit         Unit          @relation(fields: [unitId], references: [id])
   pairingPairs PairingPair[]
 }
 
@@ -179,16 +175,16 @@ model PairingPair {
   id              Int              @id @default(autoincrement())
   name            String
   description     String?
-  level           Level            @relation(fields: [levelId], references: [id])
   levelId         Int
   pairingContents PairingContent[]
+  level           Level            @relation(fields: [levelId], references: [id])
 }
 
 model PairingContent {
   id            Int         @id @default(autoincrement())
   content       String
-  pairingPair   PairingPair @relation(fields: [pairingPairId], references: [id])
   pairingPairId Int
+  pairingPair   PairingPair @relation(fields: [pairingPairId], references: [id])
 }
 
 model DevelopmentContent {
@@ -196,32 +192,32 @@ model DevelopmentContent {
   title       String
   description String?
   content     String
-  unit        Unit    @relation(fields: [unitId], references: [id])
   unitId      Int
+  unit        Unit    @relation(fields: [unitId], references: [id])
 }
 
 model ExerciseContent {
   id           Int                 @id @default(autoincrement())
   content      Json
-  exercise     Exercise            @relation(fields: [exerciseId], references: [id])
   exerciseId   String
   alternatives AlternativeOption[]
+  exercise     Exercise            @relation(fields: [exerciseId], references: [id])
 }
 
 model AlternativeOption {
   id                  Int                  @id @default(autoincrement())
   text                String
   isCorrect           Boolean
-  exerciseContent     ExerciseContent      @relation(fields: [exerciseContentId], references: [id])
   exerciseContentId   Int
   alternativeContents AlternativeContent[]
+  exerciseContent     ExerciseContent      @relation(fields: [exerciseContentId], references: [id])
 }
 
 model AlternativeContent {
   id                  Int               @id @default(autoincrement())
   description         String
-  alternativeOption   AlternativeOption @relation(fields: [alternativeOptionId], references: [id])
   alternativeOptionId Int
+  alternativeOption   AlternativeOption @relation(fields: [alternativeOptionId], references: [id])
 }
 
 enum ExerciseType {
@@ -234,8 +230,9 @@ enum UserRole {
   UTP
   TEACHER
   STUDENT
+  ADMIN
+  SUPERADMIN
 }
-
 enum ProfileType {
   UTP
   TEACHER

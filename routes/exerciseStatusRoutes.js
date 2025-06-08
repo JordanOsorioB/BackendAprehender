@@ -1,5 +1,5 @@
 const express = require("express");
-const { createExerciseState, getExerciseStates } = require("../controllers/exerciseStateController");
+const { createExerciseState, getExerciseStates, updateExerciseState } = require("../controllers/exerciseStateController");
 
 const router = express.Router();
 
@@ -57,7 +57,55 @@ const router = express.Router();
  *       401:
  *         description: No autorizado
  */
+/**
+ * @swagger
+ * /api/exercise-statuses/{id}:
+ *   patch:
+ *     tags: [ExerciseStates]
+ *     summary: Actualiza un estado de ejercicio
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del estado de ejercicio
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               studentId:
+ *                 type: string
+ *               exerciseId:
+ *                 type: string
+ *               completed:
+ *                 type: boolean
+ *               attempts:
+ *                 type: integer
+ *               lastAttempt:
+ *                 type: string
+ *                 format: date-time
+ *               correctAnswers:
+ *                 type: integer
+ *               experienceEarned:
+ *                 type: integer
+ *               locked:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Estado de ejercicio actualizado
+ *       404:
+ *         description: No encontrado
+ *       401:
+ *         description: No autorizado
+ */
 router.post("/", createExerciseState); // Crear nuevo estado de ejercicio
 router.get("/", getExerciseStates);   // Obtener todos los estados
+router.patch("/:id", updateExerciseState); // Actualizar estado de ejercicio
 
 module.exports = router;
