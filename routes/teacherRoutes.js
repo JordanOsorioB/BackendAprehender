@@ -38,15 +38,34 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - subjectId
+ *               - schoolId
+ *               - profileType
  *             properties:
  *               name:
  *                 type: string
  *                 description: Nombre del profesor
+ *               subjectId:
+ *                 type: integer
+ *                 description: ID del subject
+ *               schoolId:
+ *                 type: string
+ *                 description: ID del colegio
+ *               profileType:
+ *                 type: string
+ *                 enum: [TEACHER, UTP]
+ *                 description: Tipo de perfil del profesor
  *     responses:
  *       200:
  *         description: Profesor creado
+ *       400:
+ *         description: Campos requeridos faltantes
  *       401:
  *         description: No autorizado
+ *       500:
+ *         description: Error en el servidor
  *
  * /api/teachers/{id}:
  *   get:
