@@ -15,8 +15,8 @@ const getTeachers = async (req, res) => {
 
 // Crear un nuevo profesor
 const createTeacher = async (req, res) => {
-  const { name, subjectId, schoolId } = req.body;
-  if (!name || !subjectId || !schoolId) {
+  const { name, subjectId, schoolId, profileType } = req.body;
+  if (!name || !subjectId || !schoolId || !profileType) {
     return res
       .status(400)
       .json({ error: "⚠️ Todos los campos son obligatorios." });
@@ -24,7 +24,7 @@ const createTeacher = async (req, res) => {
 
   try {
     const teacher = await prisma.teacher.create({
-      data: { name, subjectId, schoolId },
+      data: { name, subjectId, schoolId, profileType },
     });
 
     res.json({ message: "✅ Profesor creado correctamente.", teacher });
