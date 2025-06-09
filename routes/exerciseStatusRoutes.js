@@ -38,8 +38,9 @@ const router = express.Router();
  *                 type: string
  *               exerciseId:
  *                 type: string
- *               completed:
- *                 type: boolean
+ *               completionStatus:
+ *                 type: string
+ *                 enum: [NOT_ANSWERED, CORRECT, INCORRECT]
  *               attempts:
  *                 type: integer
  *               lastAttempt:
@@ -51,6 +52,8 @@ const router = express.Router();
  *                 type: integer
  *               locked:
  *                 type: boolean
+ *               respuesta:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Estado de ejercicio creado
@@ -83,8 +86,9 @@ const router = express.Router();
  *                 type: string
  *               exerciseId:
  *                 type: string
- *               completed:
- *                 type: boolean
+ *               completionStatus:
+ *                 type: string
+ *                 enum: [NOT_ANSWERED, CORRECT, INCORRECT]
  *               attempts:
  *                 type: integer
  *               lastAttempt:
@@ -96,6 +100,8 @@ const router = express.Router();
  *                 type: integer
  *               locked:
  *                 type: boolean
+ *               respuesta:
+ *                 type: string
  *     responses:
  *       200:
  *         description: Estado de ejercicio actualizado

@@ -117,11 +117,17 @@ model Exercise {
   states           ExerciseState[]
 }
 
+enum ExerciseCompletionStatus {
+  NOT_ANSWERED
+  CORRECT
+  INCORRECT
+}
+
 model ExerciseState {
   id               String   @id @default(cuid())
   studentId        String
   exerciseId       String
-  completed        Boolean
+  completionStatus ExerciseCompletionStatus @default(NOT_ANSWERED)
   attempts         Int
   lastAttempt      DateTime
   correctAnswers   Int

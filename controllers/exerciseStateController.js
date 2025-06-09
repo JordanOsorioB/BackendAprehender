@@ -28,17 +28,17 @@ const createExerciseState = async (req, res) => {
   const {
     studentId,
     exerciseId,
-    completed,
+    completionStatus,
     attempts,
     lastAttempt,
     correctAnswers,
     experienceEarned,
     locked,
+    respuesta,
   } = req.body;
   if (
     !studentId ||
     !exerciseId ||
-    completed === undefined ||
     attempts == null ||
     !lastAttempt ||
     correctAnswers == null ||
@@ -52,12 +52,13 @@ const createExerciseState = async (req, res) => {
       data: {
         studentId,
         exerciseId,
-        completed,
+        completionStatus: completionStatus || 'NOT_ANSWERED',
         attempts,
         lastAttempt: new Date(lastAttempt),
         correctAnswers,
         experienceEarned,
         locked,
+        respuesta,
       },
     });
     res.json({ message: "Estado de ejercicio creado con éxito.", state: newState });
@@ -72,7 +73,7 @@ const updateExerciseState = async (req, res) => {
   const {
     studentId,
     exerciseId,
-    completed,
+    completionStatus,
     attempts,
     lastAttempt,
     correctAnswers,
@@ -86,7 +87,7 @@ const updateExerciseState = async (req, res) => {
       data: {
         studentId,
         exerciseId,
-        completed,
+        completionStatus,
         attempts,
         lastAttempt: lastAttempt ? new Date(lastAttempt) : undefined,
         correctAnswers,
@@ -95,7 +96,6 @@ const updateExerciseState = async (req, res) => {
         respuesta,
       },
     });
-
     res.json(updatedState);
   } catch (error) {
     res.status(500).json({ error: "Error actualizando estado de ejercicio.", details: error.message });
