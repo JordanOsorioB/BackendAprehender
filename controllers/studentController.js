@@ -1,6 +1,9 @@
 // controllers/studentController.js
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const supabase = require('../supabase/client');
+const path = require('path');
+const fs = require('fs');
 
 // Obtener todos los estudiantes
 const getStudents = async (req, res) => {
@@ -136,6 +139,114 @@ const getStudentFullData = async (req, res) => {
   }
 };
 
+// Sumar experiencia y manejar nivel y recompensas
+const addExperienceAndLevel = async (req, res) => {
+  const { studentId, experienciaGanada } = req.body;
+  if (!studentId || typeof experienciaGanada !== 'number') {
+    return res.status(400).json({ error: 'Faltan datos obligatorios.' });
+  }
+  try {
+    // 1. Obtener estudiante
+    const student = await prisma.student.findUnique({ where: { id: studentId } });
+    if (!student) return res.status(404).json({ error: 'Estudiante no encontrado.' });
+
+    // 2. Sumar experiencia
+    let nuevaExperiencia = student.experience + experienciaGanada;
+    let nuevoNivel = student.level;
+    let levelUp = false;
+    let premio = null;
+    let monedasGanadas = 0;
+
+    // 3. Obtener todos los niveles ordenados
+    const levels = await prisma.level.findMany({ orderBy: { level: 'asc' } });
+    if (!levels.length) return res.status(500).json({ error: 'No hay niveles definidos.' });
+
+    // 4. Buscar el nivel más alto que le corresponde por experiencia
+    let nivelCorrespondiente = levels
+      .filter(lvl => nuevaExperiencia >= lvl.minXP && nuevaExperiencia <= lvl.maxXP)
+      .sort((a, b) => b.level - a.level)[0];
+
+    if (nivelCorrespondiente) {
+      if (nivelCorrespondiente.level > student.level) {
+        levelUp = true;
+        nuevoNivel = nivelCorrespondiente.level;
+        premio = {
+          nivel: nivelCorrespondiente.level,
+          unlockType: nivelCorrespondiente.unlockType,
+          rewardAmount: nivelCorrespondiente.rewardAmount,
+          description: nivelCorrespondiente.description
+        };
+        if (nivelCorrespondiente.rewardAmount) monedasGanadas = nivelCorrespondiente.rewardAmount;
+      }
+    }
+
+    // 5. Actualizar estudiante
+    const updateData = {
+      experience: nuevaExperiencia,
+      level: nuevoNivel,
+    };
+    if (monedasGanadas > 0) {
+      updateData.coins = (student.coins || 0) + monedasGanadas;
+    }
+    const updatedStudent = await prisma.student.update({
+      where: { id: studentId },
+      data: updateData,
+    });
+
+    res.json({
+      student: updatedStudent,
+      levelUp,
+      premio,
+      nivelCorrespondiente
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error sumando experiencia y nivel.', details: error.message });
+  }
+};
+
+// Subir foto de perfil a Supabase Storage
+const uploadProfilePicture = async (req, res) => {
+  try {
+    const studentId = req.body.studentId;
+    if (!req.file) {
+      return res.status(400).json({ error: 'No se envió ningún archivo.' });
+    }
+    if (!studentId) {
+      return res.status(400).json({ error: 'Falta el studentId.' });
+    }
+    // Leer el archivo temporal
+    const fileBuffer = fs.readFileSync(req.file.path);
+    const ext = path.extname(req.file.originalname) || '.jpg';
+    const filename = `profile_${studentId}_${Date.now()}${ext}`;
+    const filePath = `profiles/${filename}`;
+
+    // Subir a Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, fileBuffer, {
+        contentType: req.file.mimetype,
+        upsert: true
+      });
+    // Borrar el archivo temporal
+    fs.unlinkSync(req.file.path);
+    if (error) {
+      return res.status(500).json({ error: 'Error subiendo imagen a Supabase', details: error });
+    }
+    // Obtener URL pública
+    const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+    const publicUrl = publicUrlData.publicUrl;
+    // Actualizar el estudiante en la base de datos
+    await prisma.student.update({
+      where: { id: studentId },
+      data: { profilePicture: publicUrl }
+    });
+    return res.json({ url: publicUrl });
+  } catch (err) {
+    console.error('Error al subir foto de perfil:', err);
+    return res.status(500).json({ error: 'Error interno al subir la foto de perfil.' });
+  }
+};
+
 module.exports = {
   getStudents,
   getStudentById,
@@ -144,4 +255,6 @@ module.exports = {
   deleteStudent,
   getStudentCourses,
   getStudentFullData,
+  addExperienceAndLevel,
+  uploadProfilePicture,
 };

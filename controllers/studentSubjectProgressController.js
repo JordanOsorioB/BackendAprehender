@@ -26,14 +26,50 @@ const getStudentSubjectProgressById = async (req, res) => {
 // Crear nuevo progreso de materia
 const createStudentSubjectProgress = async (req, res) => {
   const { studentId, subjectId, progress } = req.body;
-  if (!studentId || !subjectId || progress == null) {
+  if (!studentId || !subjectId) {
     return res.status(400).json({ error: "Faltan campos obligatorios." });
   }
   try {
+    const progressValue = progress == null ? 0 : progress;
     const newProgress = await prisma.studentSubjectProgress.create({
-      data: { studentId, subjectId, progress },
+      data: { studentId, subjectId, progress: progressValue },
     });
-    res.json({ message: "Progreso creado con éxito.", progress: newProgress });
+
+    // Buscar todas las unidades de la asignatura
+    const subjectUnits = await prisma.subjectUnit.findMany({
+      where: { subjectId },
+    });
+    // Buscar todos los ejercicios de esas unidades
+    const allExercises = [];
+    for (const su of subjectUnits) {
+      const exercises = await prisma.exercise.findMany({ where: { subjectUnitId: su.id } });
+      allExercises.push(...exercises);
+    }
+    // Crear ExerciseState para cada ejercicio (solo si no existe)
+    const now = new Date();
+    await Promise.all(
+      allExercises.map(async ex => {
+        const exists = await prisma.exerciseState.findFirst({
+          where: { studentId, exerciseId: ex.id }
+        });
+        if (!exists) {
+          await prisma.exerciseState.create({
+            data: {
+              studentId,
+              exerciseId: ex.id,
+              completed: false,
+              attempts: 0,
+              lastAttempt: now,
+              correctAnswers: 0,
+              experienceEarned: 0,
+              locked: false,
+              respuesta: null
+            }
+          });
+        }
+      })
+    );
+    res.json({ message: "Progreso creado con éxito y estados de ejercicios inicializados.", progress: newProgress });
   } catch (error) {
     res.status(500).json({ error: "Error creando progreso.", details: error.message });
   }

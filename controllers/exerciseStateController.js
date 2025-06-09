@@ -96,18 +96,6 @@ const updateExerciseState = async (req, res) => {
       },
     });
 
-    // Sumar experiencia al estudiante si corresponde
-    if (completed === true && experienceEarned > 0 && studentId) {
-      await prisma.student.update({
-        where: { id: studentId },
-        data: {
-          experience: {
-            increment: experienceEarned
-          }
-        }
-      });
-    }
-
     res.json(updatedState);
   } catch (error) {
     res.status(500).json({ error: "Error actualizando estado de ejercicio.", details: error.message });

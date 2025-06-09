@@ -18,11 +18,10 @@ const unitRoutes = require("./routes/unitRoutes");
 const levelRoutes = require("./routes/levelRoutes");
 const exerciseStatusRoutes = require("./routes/exerciseStatusRoutes");
 const exerciseContentRoutes = require("./routes/exerciseContentRoutes");
-const alternativeContentRoutes = require("./routes/alternativeContentRoutes");
-const alternativeOptionRoutes = require("./routes/alternativeOptionRoutes");
 const developmentContentRoutes = require("./routes/developmentContentRoutes");
 const pairingContentRoutes = require("./routes/pairingContentRoutes");
 const pairingPairRoutes = require("./routes/pairingPairRoutes");
+const profilePictureGalleryRoutes = require('./routes/profilePictureGalleryRoutes');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
@@ -66,6 +65,7 @@ app.get("/", (req, res) => {
 
 // Rutas públicas
 app.use('/api/auth', authRoutes);
+app.use('/api/profile-pictures', profilePictureGalleryRoutes);
 
 // Rutas protegidas bajo /api
 app.use('/api/users', verifyToken, userRoutes);
@@ -79,8 +79,6 @@ app.use('/api/units', verifyToken, unitRoutes);
 app.use('/api/levels', verifyToken, levelRoutes);
 app.use('/api/exercise-statuses', verifyToken, exerciseStatusRoutes);
 app.use('/api/exercise-contents', verifyToken, exerciseContentRoutes);
-app.use('/api/alternative-contents', verifyToken, alternativeContentRoutes);
-app.use('/api/alternative-options', verifyToken, alternativeOptionRoutes);
 app.use('/api/development-contents', verifyToken, developmentContentRoutes);
 app.use('/api/pairing-contents', verifyToken, pairingContentRoutes);
 app.use('/api/pairing-pairs', verifyToken, pairingPairRoutes);
