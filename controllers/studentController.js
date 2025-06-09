@@ -204,46 +204,26 @@ const addExperienceAndLevel = async (req, res) => {
   }
 };
 
-// Subir foto de perfil a Supabase Storage
+// Actualizar foto de perfil SOLO con URL
 const uploadProfilePicture = async (req, res) => {
   try {
     const studentId = req.body.studentId;
-    if (!req.file) {
-      return res.status(400).json({ error: 'No se envió ningún archivo.' });
-    }
-    if (!studentId) {
-      return res.status(400).json({ error: 'Falta el studentId.' });
-    }
-    // Leer el archivo temporal
-    const fileBuffer = fs.readFileSync(req.file.path);
-    const ext = path.extname(req.file.originalname) || '.jpg';
-    const filename = `profile_${studentId}_${Date.now()}${ext}`;
-    const filePath = `profiles/${filename}`;
+    const url = req.body.url;
 
-    // Subir a Supabase Storage
-    const { data, error } = await supabase.storage
-      .from('avatars')
-      .upload(filePath, fileBuffer, {
-        contentType: req.file.mimetype,
-        upsert: true
-      });
-    // Borrar el archivo temporal
-    fs.unlinkSync(req.file.path);
-    if (error) {
-      return res.status(500).json({ error: 'Error subiendo imagen a Supabase', details: error });
+    if (!studentId || !url) {
+      return res.status(400).json({ error: 'Faltan datos obligatorios (studentId o url).' });
     }
-    // Obtener URL pública
-    const { data: publicUrlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
-    const publicUrl = publicUrlData.publicUrl;
+
     // Actualizar el estudiante en la base de datos
     await prisma.student.update({
       where: { id: studentId },
-      data: { profilePicture: publicUrl }
+      data: { profilePicture: url }
     });
-    return res.json({ url: publicUrl });
+
+    return res.json({ url });
   } catch (err) {
-    console.error('Error al subir foto de perfil:', err);
-    return res.status(500).json({ error: 'Error interno al subir la foto de perfil.' });
+    console.error('Error al actualizar foto de perfil:', err);
+    return res.status(500).json({ error: 'Error interno al actualizar la foto de perfil.' });
   }
 };
 

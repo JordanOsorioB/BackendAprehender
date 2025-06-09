@@ -208,26 +208,25 @@ const upload = multer({ dest: 'uploads/' });
  * /api/students/upload-profile-picture:
  *   post:
  *     tags: [Students]
- *     summary: Sube una foto de perfil para un estudiante y actualiza su URL en la base de datos.
+ *     summary: Actualiza la foto de perfil de un estudiante usando una URL.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
- *         multipart/form-data:
+ *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               file:
- *                 type: string
- *                 format: binary
- *                 description: Imagen de perfil a subir
  *               studentId:
  *                 type: string
  *                 description: ID del estudiante
+ *               url:
+ *                 type: string
+ *                 description: URL de la imagen de perfil
  *     responses:
  *       200:
- *         description: URL pública de la imagen subida
+ *         description: URL de la imagen actualizada
  *         content:
  *           application/json:
  *             schema:
@@ -237,9 +236,9 @@ const upload = multer({ dest: 'uploads/' });
  *                   type: string
  *                   description: URL pública de la imagen
  *       400:
- *         description: Faltan datos obligatorios o archivo no enviado
+ *         description: Faltan datos obligatorios
  *       500:
- *         description: Error interno o error al subir la imagen
+ *         description: Error interno
  */
 
 router.get('/', studentController.getStudents);
@@ -252,6 +251,6 @@ router.get('/:id/full', studentController.getStudentFullData);
 router.post('/student-subject-progress', studentSubjectProgressController.createStudentSubjectProgress);
 router.get('/:id/study-materials', getStudyMaterialsForStudent);
 router.post('/add-experience', studentController.addExperienceAndLevel);
-router.post('/upload-profile-picture', upload.single('file'), studentController.uploadProfilePicture);
+router.post('/upload-profile-picture', studentController.uploadProfilePicture);
 
 module.exports = router;
