@@ -40,6 +40,13 @@ const upload = multer({ dest: 'uploads/' });
  *               nombre:
  *                 type: string
  *                 description: Nombre del estudiante
+ *               nick:
+ *                 type: string
+ *                 description: Nick o apodo del estudiante (opcional)
+ *               level:
+ *                 type: integer
+ *               experience:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Estudiante creado
@@ -85,6 +92,9 @@ const upload = multer({ dest: 'uploads/' });
  *             properties:
  *               nombre:
  *                 type: string
+ *               nick:
+ *                 type: string
+ *                 description: Nick o apodo del estudiante (opcional)
  *               level:
  *                 type: integer
  *               experience:

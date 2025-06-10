@@ -29,13 +29,13 @@ const getStudentById = async (req, res) => {
 
 // Crear un estudiante
 const createStudent = async (req, res) => {
-  const { nombre, level, experience } = req.body;
+  const { nombre, nick, level, experience } = req.body;
   if (!nombre || level === undefined || experience === undefined) {
     return res.status(400).json({ error: "Faltan campos obligatorios." });
   }
   try {
     const newStudent = await prisma.student.create({
-      data: { nombre, level, experience },
+      data: { nombre, nick, level, experience },
     });
     res.json({ message: "Estudiante creado con éxito.", student: newStudent });
   } catch (error) {
@@ -46,11 +46,11 @@ const createStudent = async (req, res) => {
 // Actualizar un estudiante
 const updateStudent = async (req, res) => {
   const { id } = req.params;
-  const { nombre, level, experience } = req.body;
+  const { nombre, nick, level, experience } = req.body;
   try {
     const updatedStudent = await prisma.student.update({
       where: { id },
-      data: { nombre, level, experience },
+      data: { nombre, nick, level, experience },
     });
     res.json(updatedStudent);
   } catch (error) {
