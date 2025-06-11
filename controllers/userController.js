@@ -49,7 +49,10 @@ const createUser = async (req, res) => {
   if (!validRoles.includes(role)) {
     return res
       .status(400)
-      .json({ error: "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT, SUPERADMIN o UTP." });
+      .json({
+        error:
+          "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT, SUPERADMIN o UTP.",
+      });
   }
 
   try {
@@ -90,12 +93,16 @@ const createUser = async (req, res) => {
     // Excluir la contraseña en la respuesta
     const { password: _, ...userWithoutPassword } = newUser;
 
-    res.json({ message: "✅ Usuario registrado con éxito.", user: userWithoutPassword });
+    res.json({
+      message: "✅ Usuario registrado con éxito.",
+      user: userWithoutPassword,
+    });
   } catch (error) {
     console.error("Error en createUser:", error);
-    res
-      .status(500)
-      .json({ error: "⚠️ Error creando usuario.", details: error.message });
+    res.status(500).json({
+      error: "⚠️ Error creando usuario.",
+      details: error.message,
+    });
   }
 };
 
@@ -114,17 +121,20 @@ const getUserById = async (req, res) => {
   }
 };
 
-// Actualizar usuario
+// Actualizar usuario (CORREGIDO para aceptar teacherId)
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, teacherId } = req.body;
 
   // Validación de rol
-  const validRoles = ["ADMIN", "TEACHER", "STUDENT", "SUPERADMIN"];
+  const validRoles = ["ADMIN", "TEACHER", "STUDENT", "SUPERADMIN", "UTP"];
   if (role && !validRoles.includes(role)) {
     return res
       .status(400)
-      .json({ error: "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT o SUPERADMIN." });
+      .json({
+        error:
+          "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT, SUPERADMIN o UTP.",
+      });
   }
 
   try {
@@ -133,6 +143,11 @@ const updateUser = async (req, res) => {
     // Si se envía una nueva contraseña, encriptarla
     if (password) {
       dataToUpdate.password = await bcrypt.hash(password, 10);
+    }
+
+    // Si se envía teacherId, actualizarlo también
+    if (teacherId !== undefined) {
+      dataToUpdate.teacherId = teacherId;
     }
 
     const updatedUser = await prisma.user.update({
