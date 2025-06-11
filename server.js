@@ -22,6 +22,8 @@ const developmentContentRoutes = require("./routes/developmentContentRoutes");
 const pairingContentRoutes = require("./routes/pairingContentRoutes");
 const pairingPairRoutes = require("./routes/pairingPairRoutes");
 const profilePictureGalleryRoutes = require('./routes/profilePictureGalleryRoutes');
+const sessionLogRoutes = require('./routes/sessionLogRoutes')
+const attendanceRoutes = require('./routes/attendanceRoutes')
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
@@ -82,7 +84,8 @@ app.use('/api/exercise-contents', verifyToken, exerciseContentRoutes);
 app.use('/api/development-contents', verifyToken, developmentContentRoutes);
 app.use('/api/pairing-contents', verifyToken, pairingContentRoutes);
 app.use('/api/pairing-pairs', verifyToken, pairingPairRoutes);
-
+app.use('/api/session-logs', sessionLogRoutes)
+app.use('/api/attendances', attendanceRoutes)
 async function applyMigrations() {
   try {
     await prisma.$executeRaw`SELECT 1`; // Simple consulta para verificar conexión

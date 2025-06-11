@@ -38,6 +38,7 @@ model School {
   courses  Course[]
   teachers Teacher[]
   users    User[]    @relation("UserToSchool")
+  attendances Attendance[] // Relación inversa
 }
 
 model User {
@@ -52,6 +53,7 @@ model User {
   school    School?  @relation("UserToSchool", fields: [schoolId], references: [id])
   student   Student? @relation(fields: [studentId], references: [id])
   teacher   Teacher? @relation(fields: [teacherId], references: [id])
+  sessionLogs SessionLog[] // Relación inversa
 }
 
 model Teacher {
@@ -64,6 +66,7 @@ model Teacher {
   school      School      @relation(fields: [schoolId], references: [id])
   subject     Subject     @relation(fields: [subjectId], references: [id])
   user        User?
+  attendances Attendance[] // Relación inversa
 }
 
 model Subject {
@@ -84,6 +87,7 @@ model Course {
   teacher     Teacher            @relation(fields: [teacherId], references: [id])
   enrollments CourseEnrollment[]
   progress    Progress[]
+  attendances Attendance[] // Relación inversa
 }
 
 model Progress {
@@ -242,4 +246,25 @@ model ProfilePictureGallery {
   url       String
   name      String?
   createdAt DateTime @default(now())
+}
+
+model SessionLog {
+  id       Int      @id @default(autoincrement())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  loginAt  DateTime
+  logoutAt DateTime?
+  duration Int?
+}
+
+model Attendance {
+  id                 Int      @id @default(autoincrement())
+  date               DateTime
+  teacherId          String
+  teacher            Teacher  @relation(fields: [teacherId], references: [id])
+  courseId           String
+  course             Course   @relation(fields: [courseId], references: [id])
+  schoolId           String
+  school             School   @relation(fields: [schoolId], references: [id])
+  presentStudentIds  Int[]    // IDs de estudiantes presentes
 }
