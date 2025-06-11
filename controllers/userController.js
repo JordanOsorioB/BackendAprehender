@@ -175,4 +175,33 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, createUser, getUserById, updateUser, deleteUser };
+// Cambiar contraseña autenticando con usuario y contraseña actual
+const cambiarContrasenaConCredenciales = async (req, res) => {
+  const { username, password, newPassword } = req.body;
+  if (!username || !password || !newPassword) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios.' });
+  }
+  try {
+    // Buscar usuario por username
+    const user = await prisma.user.findFirst({ where: { username } });
+    if (!user) {
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos.' });
+    }
+    // Verificar contraseña actual
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos.' });
+    }
+    // Encriptar la nueva contraseña
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword }
+    });
+    res.json({ message: 'Contraseña cambiada correctamente.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error cambiando la contraseña.' });
+  }
+};
+
+module.exports = { getUsers, createUser, getUserById, updateUser, deleteUser, cambiarContrasenaConCredenciales };

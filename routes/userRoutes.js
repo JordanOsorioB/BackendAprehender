@@ -5,6 +5,7 @@ const {
   getUserById,
   updateUser,
   deleteUser,
+  cambiarContrasenaConCredenciales,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -137,6 +138,36 @@ const router = express.Router();
  *         description: Usuario eliminado
  *       401:
  *         description: No autorizado
+ *
+ * /api/users/change-password-with-credentials:
+ *   post:
+ *     tags: [Users]
+ *     summary: Cambiar la contraseña autenticando con usuario y contraseña actual
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: Nombre de usuario
+ *               password:
+ *                 type: string
+ *                 description: Contraseña actual
+ *               newPassword:
+ *                 type: string
+ *                 description: Nueva contraseña
+ *     responses:
+ *       200:
+ *         description: Contraseña cambiada correctamente
+ *       400:
+ *         description: Faltan campos obligatorios
+ *       401:
+ *         description: Usuario o contraseña incorrectos
+ *       500:
+ *         description: Error cambiando la contraseña
  */
 
 router.get("/", getUsers);
@@ -144,5 +175,6 @@ router.post("/", createUser);
 router.get("/:id", getUserById);
 router.put("/:id", updateUser);
 router.delete("/:id", deleteUser);
+router.post('/change-password-with-credentials', cambiarContrasenaConCredenciales);
 
 module.exports = router;
