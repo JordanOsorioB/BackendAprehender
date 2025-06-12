@@ -124,7 +124,7 @@ const getUserById = async (req, res) => {
 // Actualizar usuario (CORREGIDO para aceptar teacherId)
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email, password, role, teacherId } = req.body;
+  const { name, email, password, role, teacherId, studentId } = req.body;
 
   // Validación de rol
   const validRoles = ["ADMIN", "TEACHER", "STUDENT", "SUPERADMIN", "UTP"];
@@ -148,6 +148,10 @@ const updateUser = async (req, res) => {
     // Si se envía teacherId, actualizarlo también
     if (teacherId !== undefined) {
       dataToUpdate.teacherId = teacherId;
+    }
+
+    if (studentId !== undefined) {
+      dataToUpdate.studentId = studentId;
     }
 
     const updatedUser = await prisma.user.update({
