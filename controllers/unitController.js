@@ -1,9 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-
- // Obtener todos los Units
-
+// Obtener todas las Units
 const getUnits = async (req, res) => {
   try {
     const units = await prisma.unit.findMany();
@@ -13,8 +11,7 @@ const getUnits = async (req, res) => {
   }
 };
 
- // Obtener Unit por ID
-
+// Obtener Unit por ID
 const getUnitById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -26,29 +23,33 @@ const getUnitById = async (req, res) => {
   }
 };
 
- // Crear una nueva Unit
-
+// Crear una nueva Unit
 const createUnit = async (req, res) => {
-  const { title, description, order, subjectId, unitId } = req.body;
-  if (!title || !description || order === undefined || !subjectId || unitId === undefined) return res.status(400).json({ error: "Campos 'title', 'description', 'order', 'subjectId' y 'unitId' son obligatorios." });
+  const { title, description, order, courseId } = req.body;
+  if (!title || !description || order === undefined || !courseId)
+    return res.status(400).json({
+      error: "Campos 'title', 'description', 'order' y 'courseId' son obligatorios.",
+    });
 
   try {
-    const newUnit = await prisma.unit.create({ data: { title, description, order, subjectId, unitId } });
+    const newUnit = await prisma.unit.create({
+      data: { title, description, order, courseId },
+    });
     res.json({ message: "Unidad creada.", unit: newUnit });
   } catch (error) {
     res.status(500).json({ error: "Error creando unidad.", details: error.message });
   }
 };
 
- // Actualizar Unit por ID
-
+// Actualizar Unit por ID
 const updateUnit = async (req, res) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { title, description, order } = req.body;
+
   try {
     const updatedUnit = await prisma.unit.update({
       where: { id: parseInt(id) },
-      data: { name },
+      data: { title, description, order },
     });
     res.json(updatedUnit);
   } catch (error) {
@@ -56,8 +57,7 @@ const updateUnit = async (req, res) => {
   }
 };
 
- // Eliminar Unit por ID
-
+// Eliminar Unit por ID
 const deleteUnit = async (req, res) => {
   const { id } = req.params;
   try {
@@ -67,6 +67,5 @@ const deleteUnit = async (req, res) => {
     res.status(500).json({ error: "Error eliminando unidad.", details: error.message });
   }
 };
-
 
 module.exports = { getUnits, getUnitById, createUnit, updateUnit, deleteUnit };
