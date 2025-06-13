@@ -21,6 +21,8 @@ model Student {
   unitProgress      StudentUnitProgress[]
   user              User?
   profilePicture    String?
+  attendanceReports AttendanceReport[] @relation("AttendanceReportToStudent")
+
 }
 
 model CourseEnrollment {
@@ -39,6 +41,8 @@ model School {
   teachers Teacher[]
   users    User[]    @relation("UserToSchool")
   attendances Attendance[] // Relación inversa
+  attendanceReports AttendanceReport[] @relation("AttendanceReportToSchool")
+
 }
 
 model User {
@@ -88,6 +92,7 @@ model Course {
   enrollments CourseEnrollment[]
   progress    Progress[]
   attendances Attendance[] // Relación inversa
+  attendanceReports AttendanceReport[] @relation("AttendanceReportToCourse")
 }
 
 model Progress {
@@ -267,4 +272,28 @@ model Attendance {
   schoolId           String
   school             School   @relation(fields: [schoolId], references: [id])
   presentStudentIds  Int[]    // IDs de estudiantes presentes
+}
+
+model AttendanceReport {
+  id          String   @id @default(cuid())
+  schoolId    String
+  courseId    String
+  studentId   String
+  year        Int
+  month       Int      // 1-12 (Enero a Diciembre)
+  day         Int      // 1-31
+  isPresent   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relaciones
+  school      School   @relation("AttendanceReportToSchool", fields: [schoolId], references: [id])
+  course      Course   @relation("AttendanceReportToCourse", fields: [courseId], references: [id])
+  student     Student  @relation("AttendanceReportToStudent", fields: [studentId], references: [id])
+  
+  // Índices compuestos para optimizar consultas
+  @@unique([studentId, courseId, year, month, day])
+  @@index([schoolId, year, month])
+  @@index([courseId, year, month])
+  @@index([studentId, year])
 }

@@ -26,6 +26,7 @@ const sessionLogRoutes = require('./routes/sessionLogRoutes')
 const attendanceRoutes = require('./routes/attendanceRoutes')
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const attendanceReportRoutes = require("./routes/attendanceReportRoutes");
 
 app.use(cors());
 app.use(express.json());
@@ -86,6 +87,7 @@ app.use('/api/pairing-contents', verifyToken, pairingContentRoutes);
 app.use('/api/pairing-pairs', verifyToken, pairingPairRoutes);
 app.use('/api/session-logs', sessionLogRoutes)
 app.use('/api/attendances', attendanceRoutes)
+app.use('/api/attendance-reports', verifyToken, attendanceReportRoutes);
 async function applyMigrations() {
   try {
     await prisma.$executeRaw`SELECT 1`; // Simple consulta para verificar conexión

@@ -30,10 +30,18 @@ const createStudentSubjectProgress = async (req, res) => {
     return res.status(400).json({ error: "Faltan campos obligatorios." });
   }
   try {
-    const progressValue = progress == null ? 0 : progress;
-    const newProgress = await prisma.studentSubjectProgress.create({
-      data: { studentId, subjectId, progress: progressValue },
+    // Verificar si ya existe la relación
+    let progressRecord = await prisma.studentSubjectProgress.findFirst({
+      where: { studentId, subjectId }
     });
+    let createdNewProgress = false;
+    if (!progressRecord) {
+      const progressValue = progress == null ? 0 : progress;
+      progressRecord = await prisma.studentSubjectProgress.create({
+        data: { studentId, subjectId, progress: progressValue },
+      });
+      createdNewProgress = true;
+    }
 
     // Buscar todas las unidades de la asignatura
     const subjectUnits = await prisma.subjectUnit.findMany({
@@ -57,7 +65,7 @@ const createStudentSubjectProgress = async (req, res) => {
             data: {
               studentId,
               exerciseId: ex.id,
-              completed: false,
+              completionStatus: 'NOT_ANSWERED',
               attempts: 0,
               lastAttempt: now,
               correctAnswers: 0,
@@ -69,7 +77,10 @@ const createStudentSubjectProgress = async (req, res) => {
         }
       })
     );
-    res.json({ message: "Progreso creado con éxito y estados de ejercicios inicializados.", progress: newProgress });
+    res.json({ 
+      message: createdNewProgress ? "Progreso creado con éxito y estados de ejercicios inicializados." : "El progreso ya existía, pero se inicializaron los estados de ejercicios que faltaban.",
+      progress: progressRecord 
+    });
   } catch (error) {
     res.status(500).json({ error: "Error creando progreso.", details: error.message });
   }
