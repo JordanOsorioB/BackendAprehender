@@ -1,5 +1,11 @@
 const express = require("express");
-const { createCourse, getCourses } = require("../controllers/courseController");
+const {
+  createCourse,
+  getCourses,
+  getCourseById,
+  updateCourse,
+  deleteCourse,
+} = require("../controllers/courseController");
 
 const router = express.Router();
 
@@ -9,6 +15,7 @@ const router = express.Router();
  *   name: Courses
  *   description: Endpoints para cursos
  */
+
 /**
  * @swagger
  * /api/courses:
@@ -24,7 +31,7 @@ const router = express.Router();
  *         description: No autorizado
  *   post:
  *     tags: [Courses]
- *     summary: Crea un nuevo curso
+ *     summary: Crear un nuevo curso
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -34,9 +41,16 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               subject:
  *                 type: string
- *                 description: Nombre del curso
+ *               grade:
+ *                 type: string
+ *               subjectId:
+ *                 type: integer
+ *               teacherId:
+ *                 type: integer
+ *               schoolId:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Curso creado
@@ -64,7 +78,7 @@ const router = express.Router();
  *         description: Curso no encontrado
  *   put:
  *     tags: [Courses]
- *     summary: Actualiza un curso por ID
+ *     summary: Actualizar un curso por ID
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -80,9 +94,16 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               subject:
  *                 type: string
- *                 description: Nombre del curso
+ *               grade:
+ *                 type: string
+ *               subjectId:
+ *                 type: integer
+ *               teacherId:
+ *                 type: integer
+ *               schoolId:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Curso actualizado
@@ -90,7 +111,7 @@ const router = express.Router();
  *         description: No autorizado
  *   delete:
  *     tags: [Courses]
- *     summary: Elimina un curso por ID
+ *     summary: Eliminar un curso por ID
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -106,7 +127,11 @@ const router = express.Router();
  *         description: No autorizado
  */
 
-router.post("/", createCourse); // Agregamos la ruta POST para registrar cursos
+// Rutas
 router.get("/", getCourses);
+router.get("/:id", getCourseById);
+router.post("/", createCourse);
+router.put("/:id", updateCourse);
+router.delete("/:id", deleteCourse);
 
 module.exports = router;

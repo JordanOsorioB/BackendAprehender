@@ -1,5 +1,11 @@
 const express = require("express");
-const { createUnit, getUnits } = require("../controllers/unitController");
+const {
+  createUnit,
+  getUnits,
+  getUnitById,
+  updateUnit,
+  deleteUnit,
+} = require("../controllers/unitController");
 
 const router = express.Router();
 
@@ -37,6 +43,15 @@ const router = express.Router();
  *               title:
  *                 type: string
  *                 description: Título de la unidad
+ *               description:
+ *                 type: string
+ *                 description: Descripción de la unidad
+ *               order:
+ *                 type: integer
+ *                 description: Orden de la unidad
+ *               courseId:
+ *                 type: integer
+ *                 description: ID del curso al que pertenece la unidad
  *     responses:
  *       200:
  *         description: Unidad creada
@@ -82,7 +97,10 @@ const router = express.Router();
  *             properties:
  *               title:
  *                 type: string
- *                 description: Título de la unidad
+ *               description:
+ *                 type: string
+ *               order:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: Unidad actualizada
@@ -105,7 +123,12 @@ const router = express.Router();
  *       401:
  *         description: No autorizado
  */
+
+// Rutas básicas
 router.post("/", createUnit); // Crear nueva unidad
 router.get("/", getUnits);    // Obtener todas las unidades
+router.get("/:id", getUnitById); // Obtener unidad por ID
+router.put("/:id", updateUnit);  // Actualizar unidad
+router.delete("/:id", deleteUnit); // Eliminar unidad
 
 module.exports = router;
