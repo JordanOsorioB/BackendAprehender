@@ -36,23 +36,19 @@ const createUser = async (req, res) => {
   const { username, email, password, role, schoolId, studentId } = req.body;
 
   if (!username || !email || !password || !role) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "⚠️ Todos los campos son obligatorios (username, email, password, role).",
-      });
+    return res.status(400).json({
+      error:
+        "⚠️ Todos los campos son obligatorios (username, email, password, role).",
+    });
   }
 
   // Verificar que el rol sea válido
   const validRoles = ["ADMIN", "TEACHER", "STUDENT", "SUPERADMIN", "UTP"];
   if (!validRoles.includes(role)) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT, SUPERADMIN o UTP.",
-      });
+    return res.status(400).json({
+      error:
+        "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT, SUPERADMIN o UTP.",
+    });
   }
 
   try {
@@ -64,11 +60,9 @@ const createUser = async (req, res) => {
     });
 
     if (existingUser) {
-      return res
-        .status(400)
-        .json({
-          error: "⚠️ El correo o el nombre de usuario ya están registrados.",
-        });
+      return res.status(400).json({
+        error: "⚠️ El correo o el nombre de usuario ya están registrados.",
+      });
     }
 
     // Encriptar la contraseña antes de guardar
@@ -106,16 +100,37 @@ const createUser = async (req, res) => {
   }
 };
 
-// Obtener un usuario por ID
+// Obtener un usuario por ID (actualizado con subject)
 const getUserById = async (req, res) => {
   const { id } = req.params;
   try {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        teacher: {
+          include: {
+            subject: true,
+          },
+        },
+        student: true,
+      },
+    });
+
     if (!user)
       return res.status(404).json({ error: "⚠️ Usuario no encontrado." });
+
     // Excluir la contraseña
     const { password, ...userWithoutPassword } = user;
-    res.json(userWithoutPassword);
+
+    // Agregar subject igual que en login
+    const subject = user.teacher?.subject
+      ? { id: user.teacher.subject.id, name: user.teacher.subject.name }
+      : null;
+
+    res.json({
+      ...userWithoutPassword,
+      subject,
+    });
   } catch (error) {
     res.status(500).json({ error: "⚠️ Error obteniendo usuario." });
   }
@@ -129,12 +144,10 @@ const updateUser = async (req, res) => {
   // Validación de rol
   const validRoles = ["ADMIN", "TEACHER", "STUDENT", "SUPERADMIN", "UTP"];
   if (role && !validRoles.includes(role)) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT, SUPERADMIN o UTP.",
-      });
+    return res.status(400).json({
+      error:
+        "⚠️ Rol inválido. Debe ser ADMIN, TEACHER, STUDENT, SUPERADMIN o UTP.",
+    });
   }
 
   try {
@@ -183,29 +196,40 @@ const deleteUser = async (req, res) => {
 const cambiarContrasenaConCredenciales = async (req, res) => {
   const { username, password, newPassword } = req.body;
   if (!username || !password || !newPassword) {
-    return res.status(400).json({ error: 'Faltan campos obligatorios.' });
+    return res.status(400).json({ error: "Faltan campos obligatorios." });
   }
   try {
     // Buscar usuario por username
     const user = await prisma.user.findFirst({ where: { username } });
     if (!user) {
-      return res.status(401).json({ error: 'Usuario o contraseña incorrectos.' });
+      return res
+        .status(401)
+        .json({ error: "Usuario o contraseña incorrectos." });
     }
     // Verificar contraseña actual
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return res.status(401).json({ error: 'Usuario o contraseña incorrectos.' });
+      return res
+        .status(401)
+        .json({ error: "Usuario o contraseña incorrectos." });
     }
     // Encriptar la nueva contraseña
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
       where: { id: user.id },
-      data: { password: hashedPassword }
+      data: { password: hashedPassword },
     });
-    res.json({ message: 'Contraseña cambiada correctamente.' });
+    res.json({ message: "Contraseña cambiada correctamente." });
   } catch (error) {
-    res.status(500).json({ error: 'Error cambiando la contraseña.' });
+    res.status(500).json({ error: "Error cambiando la contraseña." });
   }
 };
 
-module.exports = { getUsers, createUser, getUserById, updateUser, deleteUser, cambiarContrasenaConCredenciales };
+module.exports = {
+  getUsers,
+  createUser,
+  getUserById,
+  updateUser,
+  deleteUser,
+  cambiarContrasenaConCredenciales,
+};

@@ -11,7 +11,11 @@ const login = async (req, res) => {
     const user = await prisma.user.findFirst({
       where: { username },
       include: {
-        teacher: true,
+        teacher: {
+          include: {
+            subject: true
+          }
+        },
         student: true
       }
     });
@@ -48,7 +52,10 @@ const login = async (req, res) => {
         email: user.email,
         role: user.role,
         teacher: user.teacher,
-        student: user.student
+        student: user.student,
+        subject: user.teacher?.subject
+          ? { id: user.teacher.subject.id, name: user.teacher.subject.name }
+          : null
       }
     });
   } catch (error) {
@@ -76,4 +83,4 @@ const verifyToken = async (req, res, next) => {
 module.exports = {
   login,
   verifyToken
-}; 
+};
