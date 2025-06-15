@@ -6,6 +6,7 @@ const { verifyToken } = require("./controllers/authController");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const courseRoutes = require("./routes/courseRoutes");
+const courseEnrollmentRoutes = require("./routes/courseEnrollmentRoutes");
 const schoolRoutes = require("./routes/schoolRoutes");
 const teacherRoutes = require("./routes/teacherRoutes");
 const subjectRoutes = require("./routes/subjectRoutes");
@@ -73,6 +74,7 @@ app.use('/api/profile-pictures', profilePictureGalleryRoutes);
 // Rutas protegidas bajo /api
 app.use('/api/users', verifyToken, userRoutes);
 app.use('/api/courses', verifyToken, courseRoutes);
+app.use('/api/enrollments', verifyToken, courseEnrollmentRoutes);
 app.use('/api/schools', verifyToken, schoolRoutes);
 app.use('/api/teachers', verifyToken, teacherRoutes);
 app.use('/api/subjects', verifyToken, subjectRoutes);
