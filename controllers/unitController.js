@@ -27,7 +27,11 @@ const getUnitById = async (req, res) => {
 const createUnit = async (req, res) => {
   const { title, description, order, courseId, subjectId } = req.body;
 
-  if (!title || !description || order === undefined || !courseId || !subjectId) {
+  if (    !title?.trim() ||
+  !description?.trim() ||
+  isNaN(parseInt(order)) ||
+  !courseId?.trim() ||
+  !subjectId?.trim()) {
     return res.status(400).json({
       error: "Campos 'title', 'description', 'order', 'courseId' y 'subjectId' son obligatorios.",
     });
@@ -36,14 +40,14 @@ const createUnit = async (req, res) => {
   try {
     // Primero se crea la unidad
     const newUnit = await prisma.unit.create({
-      data: { title, description, order, courseId },
+      data: { title, description, order: parseInt(order, 10), courseId },
     });
 
     // Luego se crea la relación en SubjectUnit
     await prisma.subjectUnit.create({
       data: {
         subjectId,
-        unitId: newUnit.id,
+        unitId: parseInt(newUnit.id, 10),
       },
     });
 
