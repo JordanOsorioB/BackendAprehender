@@ -96,6 +96,7 @@ model Course {
   progress          Progress[]
   attendances       Attendance[]
   attendanceReports AttendanceReport[] @relation("AttendanceReportToCourse")
+  units             Unit[]
 }
 
 model Progress {
@@ -176,8 +177,10 @@ model Unit {
   title              String
   description        String
   order              Int
+  courseId           String?
   unitProgress       StudentUnitProgress[] @relation("ProgressToUnit")
   subjectUnits       SubjectUnit[]         @relation("UnitSubjectUnits")
+  course             Course?                @relation(fields: [courseId], references: [id])
 }
 
 model PairingPair {

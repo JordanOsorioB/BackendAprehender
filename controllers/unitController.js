@@ -27,36 +27,69 @@ const getUnitById = async (req, res) => {
 const createUnit = async (req, res) => {
   const { title, description, order, courseId, subjectId } = req.body;
 
-  if (    !title?.trim() ||
-  !description?.trim() ||
-  isNaN(parseInt(order)) ||
-  !courseId?.trim() ||
-  !subjectId?.trim()) {
+  console.log("📥 Datos recibidos:", req.body);
+
+  if (
+    !title?.trim() ||
+    !description?.trim() ||
+    isNaN(parseInt(order)) ||
+    !courseId?.trim() ||
+    !subjectId?.trim()
+  ) {
     return res.status(400).json({
       error: "Campos 'title', 'description', 'order', 'courseId' y 'subjectId' son obligatorios.",
     });
   }
 
   try {
-    // Primero se crea la unidad
-    const newUnit = await prisma.unit.create({
-      data: { title, description, order: parseInt(order, 10), courseId },
+    // 🔢 Obtener el próximo ID para la tabla Unit
+    const lastUnit = await prisma.unit.findFirst({
+      orderBy: { id: "desc" },
+      select: { id: true },
     });
 
-    // Luego se crea la relación en SubjectUnit
-    await prisma.subjectUnit.create({
+    const nextUnitId = lastUnit ? lastUnit.id + 1 : 1;
+
+    // ✅ Crear nueva unidad
+    const newUnit = await prisma.unit.create({
       data: {
-        subjectId,
-        unitId: parseInt(newUnit.id, 10),
+        id: nextUnitId,
+        title,
+        description,
+        order: parseInt(order, 10),
+        courseId,
       },
     });
 
-    res.status(201).json({ message: "Unidad creada correctamente", unit: newUnit });
+    // 🔢 Obtener el próximo ID para la tabla SubjectUnit
+    const lastSubjectUnit = await prisma.subjectUnit.findFirst({
+      orderBy: { id: "desc" },
+      select: { id: true },
+    });
+
+    const nextSubjectUnitId = lastSubjectUnit ? lastSubjectUnit.id + 1 : 1;
+
+    // ✅ Crear la relación en SubjectUnit
+    await prisma.subjectUnit.create({
+      data: {
+        id: nextSubjectUnitId,
+        title,
+        description,
+        order: parseInt(order, 10),
+        subjectId,
+        unitId: newUnit.id,
+      },
+    });
+
+    res.status(201).json({ message: "Unidad y relación SubjectUnit creadas correctamente", unit: newUnit });
   } catch (error) {
-    console.error("Error al crear unidad:", error);
+    console.error("❌ Error al crear unidad:", error);
     res.status(500).json({ error: "Error al crear unidad", details: error.message });
   }
 };
+
+
+
 
 
 // Actualizar Unit por ID
