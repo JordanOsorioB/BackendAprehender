@@ -25,21 +25,35 @@ const getUnitById = async (req, res) => {
 
 // Crear una nueva Unit
 const createUnit = async (req, res) => {
-  const { title, description, order, courseId } = req.body;
-  if (!title || !description || order === undefined || !courseId)
+  const { title, description, order, courseId, subjectId } = req.body;
+
+  if (!title || !description || order === undefined || !courseId || !subjectId) {
     return res.status(400).json({
-      error: "Campos 'title', 'description', 'order' y 'courseId' son obligatorios.",
+      error: "Campos 'title', 'description', 'order', 'courseId' y 'subjectId' son obligatorios.",
     });
+  }
 
   try {
+    // Primero se crea la unidad
     const newUnit = await prisma.unit.create({
       data: { title, description, order, courseId },
     });
-    res.json({ message: "Unidad creada.", unit: newUnit });
+
+    // Luego se crea la relación en SubjectUnit
+    await prisma.subjectUnit.create({
+      data: {
+        subjectId,
+        unitId: newUnit.id,
+      },
+    });
+
+    res.status(201).json({ message: "Unidad creada correctamente", unit: newUnit });
   } catch (error) {
-    res.status(500).json({ error: "Error creando unidad.", details: error.message });
+    console.error("Error al crear unidad:", error);
+    res.status(500).json({ error: "Error al crear unidad", details: error.message });
   }
 };
+
 
 // Actualizar Unit por ID
 const updateUnit = async (req, res) => {
@@ -68,4 +82,37 @@ const deleteUnit = async (req, res) => {
   }
 };
 
-module.exports = { getUnits, getUnitById, createUnit, updateUnit, deleteUnit };
+// Obtener unidades por subjectId (relación SubjectUnit → Unit)
+const getUnitsBySubject = async (req, res) => {
+  try {
+    const { subjectId } = req.params;
+
+    const subjectUnits = await prisma.subjectUnit.findMany({
+      where: { subjectId },
+      include: {
+        unit: true,
+      },
+      orderBy: {
+        unit: {
+          order: "asc",
+        },
+      },
+    });
+
+    const units = subjectUnits.map((su) => su.unit);
+    res.json(units);
+  } catch (error) {
+    console.error("Error al obtener unidades por asignatura:", error);
+    res.status(500).json({ error: "Error al obtener unidades" });
+  }
+};
+
+module.exports = {
+  getUnits,
+  getUnitById,
+  createUnit,
+  updateUnit,
+  deleteUnit,
+  getUnitsBySubject,
+};
+

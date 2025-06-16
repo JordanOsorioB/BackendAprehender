@@ -5,6 +5,7 @@ const {
   getUnitById,
   updateUnit,
   deleteUnit,
+  getUnitsBySubject,
 } = require("../controllers/unitController");
 
 const router = express.Router();
@@ -127,6 +128,7 @@ const router = express.Router();
 // Rutas básicas
 router.post("/", createUnit); // Crear nueva unidad
 router.get("/", getUnits);    // Obtener todas las unidades
+router.get("/subjects/:subjectId/units", getUnitsBySubject);
 router.get("/:id", getUnitById); // Obtener unidad por ID
 router.put("/:id", updateUnit);  // Actualizar unidad
 router.delete("/:id", deleteUnit); // Eliminar unidad
