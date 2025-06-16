@@ -111,5 +111,6 @@ const router = express.Router();
 
 router.get("/", getSubjects);
 router.post("/", createSubject);
+router.post("/", subjectController.createSubject);
 
 module.exports = router;

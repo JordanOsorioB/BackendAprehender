@@ -24,12 +24,20 @@ const getSubjectById = async (req, res) => {
   }
 };
 
-// Crear materia
+// Crear materia con opción de asociarla a un curso
 const createSubject = async (req, res) => {
-  const { name } = req.body;
+  const { name, courseId } = req.body;
   if (!name) return res.status(400).json({ error: "El nombre es obligatorio." });
+
   try {
-    const newSubject = await prisma.subject.create({ data: { name } });
+    const newSubject = await prisma.subject.create({
+      data: {
+        name,
+        courses: courseId ? {
+          connect: { id: courseId }
+        } : undefined
+      },
+    });
     res.json({ message: "Materia creada con éxito.", subject: newSubject });
   } catch (error) {
     res.status(500).json({ error: "Error creando materia.", details: error.message });
@@ -62,4 +70,10 @@ const deleteSubject = async (req, res) => {
   }
 };
 
-module.exports = { getSubjects, getSubjectById, createSubject, updateSubject , deleteSubject };
+module.exports = {
+  getSubjects,
+  getSubjectById,
+  createSubject,
+  updateSubject,
+  deleteSubject
+};
