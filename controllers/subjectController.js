@@ -33,9 +33,7 @@ const createSubject = async (req, res) => {
     const newSubject = await prisma.subject.create({
       data: {
         name,
-        courses: courseId ? {
-          connect: { id: courseId }
-        } : undefined
+        course: courseId ? { connect: { id: courseId } } : undefined,
       },
     });
     res.json({ message: "Materia creada con éxito.", subject: newSubject });
