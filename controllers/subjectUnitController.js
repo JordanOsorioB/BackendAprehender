@@ -65,5 +65,30 @@ const deleteSubjectUnit = async (req, res) => {
   }
 };
 
+// Obtener SubjectUnit por subjectId y unitId
+const getSubjectUnitBySubjectAndUnit = async (req, res) => {
+  const { subjectId, unitId } = req.params;
 
-module.exports = { getSubjectUnits, createSubjectUnit, updateSubjectUnit, deleteSubjectUnit };
+  try {
+    const subjectUnit = await prisma.subjectUnit.findFirst({
+      where: {
+        subjectId,
+        unitId: parseInt(unitId),
+      },
+    });
+
+    if (!subjectUnit) {
+      return res.status(404).json({ error: "Relación no encontrada." });
+    }
+
+    res.json(subjectUnit);
+  } catch (error) {
+    res.status(500).json({
+      error: "Error buscando la relación subject-unit.",
+      details: error.message,
+    });
+  }
+};
+
+
+module.exports = { getSubjectUnits, createSubjectUnit, updateSubjectUnit, deleteSubjectUnit, getSubjectUnitBySubjectAndUnit, };

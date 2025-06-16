@@ -7,6 +7,11 @@ const {
   deleteSubject,
 } = require("../controllers/subjectController");
 
+const {
+  getSubjectUnitBySubjectAndUnit,
+} = require("../controllers/subjectUnitController");
+
+
 const router = express.Router();
 
 /**
@@ -121,5 +126,10 @@ router.get("/:id", getSubjectById);
 router.post("/", createSubject);
 router.put("/:id", updateSubject);
 router.delete("/:id", deleteSubject);
+// Ruta para obtener subjectUnit por subjectId y unitId
+router.get(
+  "/subject-units/by-subject/:subjectId/unit/:unitId",
+  getSubjectUnitBySubjectAndUnit
+);
 
 module.exports = router;
