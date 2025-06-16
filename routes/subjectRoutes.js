@@ -1,7 +1,10 @@
 const express = require("express");
 const {
   getSubjects,
+  getSubjectById,
   createSubject,
+  updateSubject,
+  deleteSubject,
 } = require("../controllers/subjectController");
 
 const router = express.Router();
@@ -40,6 +43,9 @@ const router = express.Router();
  *               name:
  *                 type: string
  *                 description: Nombre de la asignatura
+ *               courseId:
+ *                 type: string
+ *                 description: ID del curso asociado (opcional)
  *     responses:
  *       200:
  *         description: Asignatura creada
@@ -109,8 +115,11 @@ const router = express.Router();
  *         description: No autorizado
  */
 
+// Rutas
 router.get("/", getSubjects);
+router.get("/:id", getSubjectById);
 router.post("/", createSubject);
-router.post("/", subjectController.createSubject);
+router.put("/:id", updateSubject);
+router.delete("/:id", deleteSubject);
 
 module.exports = router;
