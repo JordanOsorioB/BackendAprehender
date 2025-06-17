@@ -42,51 +42,60 @@ const createStudentSubjectProgress = async (req, res) => {
 
       for (const subject of subjects) {
         const subjectId = subject.id;
-        const existe = await prisma.studentSubjectProgress.findFirst({
+        // 1. Verificar o crear la relación studentId-subjectId
+        let progress = await prisma.studentSubjectProgress.findFirst({
           where: { studentId, subjectId }
         });
 
-        if (!existe) {
-          await prisma.studentSubjectProgress.create({
+        if (!progress) {
+          progress = await prisma.studentSubjectProgress.create({
             data: { studentId, subjectId, progress: 0 }
           });
           totalRelacionesCreadas++;
+        }
 
-          const subjectUnitsAsignatura = await prisma.subjectUnit.findMany({
-            where: { subjectId }
+        // 2. Buscar todas las unidades de la asignatura
+        const subjectUnitsAsignatura = await prisma.subjectUnit.findMany({
+          where: { subjectId }
+        });
+
+        // 3. Buscar todos los ejercicios de esas unidades
+        const allExercises = [];
+        for (const su of subjectUnitsAsignatura) {
+          const exercises = await prisma.exercise.findMany({ where: { subjectUnitId: su.id } });
+          allExercises.push(...exercises);
+        }
+
+        // 4. Crear ExerciseState para cada ejercicio que NO exista para ese estudiante
+        const now = new Date();
+        let nuevosExerciseStates = 0;
+        for (const ex of allExercises) {
+          const exists = await prisma.exerciseState.findFirst({
+            where: { studentId, exerciseId: ex.id }
           });
 
-          const allExercises = [];
-          for (const su of subjectUnitsAsignatura) {
-            const exercises = await prisma.exercise.findMany({ where: { subjectUnitId: su.id } });
-            allExercises.push(...exercises);
-          }
-
-          const now = new Date();
-          for (const ex of allExercises) {
-            const exists = await prisma.exerciseState.findFirst({
-              where: { studentId, exerciseId: ex.id }
+          if (!exists) {
+            await prisma.exerciseState.create({
+              data: {
+                studentId,
+                exerciseId: ex.id,
+                completionStatus: 'NOT_ANSWERED',
+                attempts: 1,
+                lastAttempt: now,
+                correctAnswers: 0,
+                experienceEarned: ex.totalExperience,
+                locked: false,
+                respuesta: null
+              }
             });
-
-            if (!exists) {
-              await prisma.exerciseState.create({
-                data: {
-                  studentId,
-                  exerciseId: ex.id,
-                  completionStatus: 'NOT_ANSWERED',
-                  attempts: 1,
-                  lastAttempt: now,
-                  correctAnswers: 0,
-                  experienceEarned: ex.totalExperience,
-                  locked: false,
-                  respuesta: null
-                }
-              });
-              totalExerciseStatesCreados++;
-            }
+            totalExerciseStatesCreados++;
+            nuevosExerciseStates++;
           }
+        }
 
-          detalles.push({ studentId, subjectId, ejercicios: allExercises.length });
+        // Solo agrego al detalle si hubo nuevos ExerciseStates
+        if (nuevosExerciseStates > 0) {
+          detalles.push({ studentId, subjectId, ejercicios: nuevosExerciseStates });
         }
       }
     }
