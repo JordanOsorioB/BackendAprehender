@@ -14,6 +14,66 @@ const upload = multer({ dest: 'uploads/' });
  */
 /**
  * @swagger
+ * /api/students/with-progress:
+ *   get:
+ *     tags: [Students]
+ *     summary: Obtener todos los estudiantes con progreso y datos relevantes
+ *     description: Devuelve una lista de estudiantes con información relevante para tabla, incluyendo imagen, nombre, nivel, experiencia, cursos, progreso, ejercicios respondidos y fecha de registro.
+ *     responses:
+ *       200:
+ *         description: Lista de estudiantes con progreso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     description: ID del estudiante
+ *                   nombre:
+ *                     type: string
+ *                     description: Nombre del estudiante
+ *                   profilePicture:
+ *                     type: string
+ *                     nullable: true
+ *                     description: URL de la imagen de perfil (si tiene)
+ *                   nivel:
+ *                     type: integer
+ *                     description: Nivel del estudiante
+ *                   experiencia:
+ *                     type: integer
+ *                     description: Experiencia acumulada
+ *                   cursos:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                     description: Nombres de los cursos inscritos
+ *                   progreso:
+ *                     type: integer
+ *                     description: Porcentaje de ejercicios respondidos
+ *                   respondidos:
+ *                     type: integer
+ *                     description: Cantidad de ejercicios respondidos
+ *                   totalEjercicios:
+ *                     type: integer
+ *                     description: Total de ejercicios asignados
+ *                   registrado:
+ *                     type: string
+ *                     nullable: true
+ *                     description: Fecha de registro (YYYY-MM-DD)
+ *                   subjectId:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                     description: IDs de las asignaturas asociadas al estudiante
+ *       500:
+ *         description: Error interno
+ */
+router.get('/with-progress', studentController.getStudentsWithProgress);
+/**
+ * @swagger
  * /api/students:
  *   get:
  *     tags: [Students]
@@ -247,7 +307,6 @@ const upload = multer({ dest: 'uploads/' });
  *       500:
  *         description: Error interno
  */
-
 router.get('/', studentController.getStudents);
 router.post('/', studentController.createStudent);
 router.get('/:id', studentController.getStudentById);

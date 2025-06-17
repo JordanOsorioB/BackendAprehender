@@ -227,6 +227,66 @@ const uploadProfilePicture = async (req, res) => {
   }
 };
 
+// Obtener todos los estudiantes con progreso y datos relevantes
+const getStudentsWithProgress = async (req, res) => {
+  try {
+    // Traer todos los estudiantes y sus relaciones
+    const students = await prisma.student.findMany({
+      include: {
+        courseEnrollments: { include: { course: true } },
+        exerciseStates: true,
+        subjectProgress: true, // Para obtener los subjectId
+      },
+    });
+
+    // Para cada estudiante, calcular progreso y datos relevantes
+    const result = students.map((student) => {
+      // Cursos
+      let cursos = [];
+      try {
+        cursos = student.courseEnrollments?.map(e => e.course?.name || null).filter(Boolean) || [];
+      } catch (e) { cursos = []; }
+      // Ejercicios asignados y respondidos
+      let totalEjercicios = 0;
+      let respondidos = 0;
+      try {
+        totalEjercicios = student.exerciseStates?.length || 0;
+        respondidos = student.exerciseStates?.filter(e => e.completionStatus !== 'NOT_ANSWERED').length || 0;
+      } catch (e) { totalEjercicios = 0; respondidos = 0; }
+      // Progreso (porcentaje)
+      const progreso = totalEjercicios > 0 ? Math.round((respondidos / totalEjercicios) * 100) : 0;
+      // Fecha de registro (de la primera inscripción a curso, si existe)
+      let registrado = null;
+      try {
+        if (student.courseEnrollments && student.courseEnrollments.length > 0) {
+          registrado = student.courseEnrollments[0].createdAt?.toISOString().split('T')[0] || null;
+        }
+      } catch (e) { registrado = null; }
+      // SubjectId (array de todos los subjectId asociados)
+      let subjectId = [];
+      try {
+        subjectId = student.subjectProgress?.map(sp => sp.subjectId) || [];
+      } catch (e) { subjectId = []; }
+      return {
+        id: student.id,
+        nombre: student.nombre,
+        profilePicture: student.profilePicture || null,
+        nivel: student.level,
+        experiencia: student.experience,
+        cursos,
+        progreso,
+        respondidos,
+        totalEjercicios,
+        registrado,
+        subjectId,
+      };
+    });
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: "Error obteniendo estudiantes con progreso.", details: error.message });
+  }
+};
+
 module.exports = {
   getStudents,
   getStudentById,
@@ -237,4 +297,5 @@ module.exports = {
   getStudentFullData,
   addExperienceAndLevel,
   uploadProfilePicture,
+  getStudentsWithProgress,
 };
