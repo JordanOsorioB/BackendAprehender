@@ -11,7 +11,6 @@ const {
   getSubjectUnitBySubjectAndUnit,
 } = require("../controllers/subjectUnitController");
 
-
 const router = express.Router();
 
 /**
@@ -20,6 +19,7 @@ const router = express.Router();
  *   name: Subjects
  *   description: Endpoints para asignaturas
  */
+
 /**
  * @swagger
  * /api/subjects:
@@ -118,18 +118,37 @@ const router = express.Router();
  *         description: Asignatura eliminada
  *       401:
  *         description: No autorizado
+ *
+ * /api/subjects/{subjectId}/units/{unitId}:
+ *   get:
+ *     tags: [Subjects]
+ *     summary: Obtener la relación SubjectUnit por subjectId y unitId
+ *     parameters:
+ *       - in: path
+ *         name: subjectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: unitId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Relación Subject-Unit encontrada
+ *       404:
+ *         description: No se encontró la relación
  */
 
-// Rutas
+// Rutas de asignaturas
 router.get("/", getSubjects);
 router.get("/:id", getSubjectById);
 router.post("/", createSubject);
 router.put("/:id", updateSubject);
 router.delete("/:id", deleteSubject);
-// Ruta para obtener subjectUnit por subjectId y unitId
-router.get(
-  "/subject-units/by-subject/:subjectId/unit/:unitId",
-  getSubjectUnitBySubjectAndUnit
-);
+
+// Ruta para relación subjectId y unitId (menos limpia pero efectiva)
+router.get("/:subjectId/units/:unitId", getSubjectUnitBySubjectAndUnit);
 
 module.exports = router;

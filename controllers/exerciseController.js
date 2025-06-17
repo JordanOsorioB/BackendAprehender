@@ -26,7 +26,7 @@ const getExerciseById = async (req, res) => {
 // Crear nuevo ejercicio
 const createExercise = async (req, res) => {
   const { title, description, type, difficulty, totalExperience, subjectUnitId, content } = req.body;
-  if (!title || !description || !type || !difficulty || totalExperience == null || !subjectUnitId || !content) {
+  if (!title || !description || !type || totalExperience == null || !subjectUnitId || !content) {
     return res.status(400).json({ error: "Faltan campos obligatorios." });
   }
   try {

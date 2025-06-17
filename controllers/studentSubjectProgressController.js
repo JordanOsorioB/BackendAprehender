@@ -23,66 +23,80 @@ const getStudentSubjectProgressById = async (req, res) => {
   }
 };
 
-// Crear nuevo progreso de materia
+// Crear nuevo progreso de materia (masivo)
 const createStudentSubjectProgress = async (req, res) => {
-  const { studentId, subjectId, progress } = req.body;
-  if (!studentId || !subjectId) {
-    return res.status(400).json({ error: "Faltan campos obligatorios." });
+  const { actualizarMasivo } = req.body;
+  if (!actualizarMasivo) {
+    return res.status(400).json({ error: "El único body permitido es { actualizarMasivo: true }." });
   }
+
   try {
-    // Verificar si ya existe la relación
-    let progressRecord = await prisma.studentSubjectProgress.findFirst({
-      where: { studentId, subjectId }
-    });
-    let createdNewProgress = false;
-    if (!progressRecord) {
-      const progressValue = progress == null ? 0 : progress;
-      progressRecord = await prisma.studentSubjectProgress.create({
-        data: { studentId, subjectId, progress: progressValue },
-      });
-      createdNewProgress = true;
+    const enrollments = await prisma.courseEnrollment.findMany();
+    let totalRelacionesCreadas = 0;
+    let totalExerciseStatesCreados = 0;
+    let detalles = [];
+
+    for (const enrollment of enrollments) {
+      const { studentId, courseId } = enrollment;
+      const subjects = await prisma.subject.findMany({ where: { courseId } });
+
+      for (const subject of subjects) {
+        const subjectId = subject.id;
+        const existe = await prisma.studentSubjectProgress.findFirst({
+          where: { studentId, subjectId }
+        });
+
+        if (!existe) {
+          await prisma.studentSubjectProgress.create({
+            data: { studentId, subjectId, progress: 0 }
+          });
+          totalRelacionesCreadas++;
+
+          const subjectUnitsAsignatura = await prisma.subjectUnit.findMany({
+            where: { subjectId }
+          });
+
+          const allExercises = [];
+          for (const su of subjectUnitsAsignatura) {
+            const exercises = await prisma.exercise.findMany({ where: { subjectUnitId: su.id } });
+            allExercises.push(...exercises);
+          }
+
+          const now = new Date();
+          for (const ex of allExercises) {
+            const exists = await prisma.exerciseState.findFirst({
+              where: { studentId, exerciseId: ex.id }
+            });
+
+            if (!exists) {
+              await prisma.exerciseState.create({
+                data: {
+                  studentId,
+                  exerciseId: ex.id,
+                  completionStatus: 'NOT_ANSWERED',
+                  attempts: 1,
+                  lastAttempt: now,
+                  correctAnswers: 0,
+                  experienceEarned: ex.totalExperience,
+                  locked: false,
+                  respuesta: null
+                }
+              });
+              totalExerciseStatesCreados++;
+            }
+          }
+
+          detalles.push({ studentId, subjectId, ejercicios: allExercises.length });
+        }
+      }
     }
 
-    // Buscar todas las unidades de la asignatura
-    const subjectUnits = await prisma.subjectUnit.findMany({
-      where: { subjectId },
-    });
-    // Buscar todos los ejercicios de esas unidades
-    const allExercises = [];
-    for (const su of subjectUnits) {
-      const exercises = await prisma.exercise.findMany({ where: { subjectUnitId: su.id } });
-      allExercises.push(...exercises);
-    }
-    // Crear ExerciseState para cada ejercicio (solo si no existe)
-    const now = new Date();
-    await Promise.all(
-      allExercises.map(async ex => {
-        const exists = await prisma.exerciseState.findFirst({
-          where: { studentId, exerciseId: ex.id }
-        });
-        if (!exists) {
-          await prisma.exerciseState.create({
-            data: {
-              studentId,
-              exerciseId: ex.id,
-              completionStatus: 'NOT_ANSWERED',
-              attempts: 0,
-              lastAttempt: now,
-              correctAnswers: 0,
-              experienceEarned: 0,
-              locked: false,
-              respuesta: null
-            }
-          });
-        }
-      })
-    );
-    res.json({ 
-      message: createdNewProgress ? "Progreso creado con éxito y estados de ejercicios inicializados." : "El progreso ya existía, pero se inicializaron los estados de ejercicios que faltaban.",
-      progress: progressRecord 
+    res.json({
+      message: `Proceso masivo finalizado. Relaciones creadas: ${totalRelacionesCreadas}, ExerciseStates creados: ${totalExerciseStatesCreados}`,
+      detalles
     });
   } catch (error) {
-    res.status(500).json({ error: "Error creando progreso.", details: error.message });
+    res.status(500).json({ error: "Error en el proceso masivo.", details: error.message });
   }
 };
 
@@ -90,6 +104,7 @@ const createStudentSubjectProgress = async (req, res) => {
 const updateStudentSubjectProgress = async (req, res) => {
   const { id } = req.params;
   const { studentId, subjectId, progress } = req.body;
+
   try {
     const updatedProgress = await prisma.studentSubjectProgress.update({
       where: { id },
@@ -104,6 +119,7 @@ const updateStudentSubjectProgress = async (req, res) => {
 // Eliminar progreso de materia
 const deleteStudentSubjectProgress = async (req, res) => {
   const { id } = req.params;
+
   try {
     await prisma.studentSubjectProgress.delete({ where: { id } });
     res.json({ message: "Progreso eliminado correctamente." });
@@ -112,4 +128,10 @@ const deleteStudentSubjectProgress = async (req, res) => {
   }
 };
 
-module.exports = { getStudentSubjectProgresses, getStudentSubjectProgressById, createStudentSubjectProgress, updateStudentSubjectProgress, deleteStudentSubjectProgress };
+module.exports = {
+  getStudentSubjectProgresses,
+  getStudentSubjectProgressById,
+  createStudentSubjectProgress,
+  updateStudentSubjectProgress,
+  deleteStudentSubjectProgress
+};

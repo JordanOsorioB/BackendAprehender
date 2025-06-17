@@ -149,7 +149,7 @@ const upload = multer({ dest: 'uploads/' });
  * /api/students/student-subject-progress:
  *   post:
  *     tags: [Students]
- *     summary: Asigna una asignatura a un estudiante y crea los estados de todos los ejercicios de esa asignatura para el estudiante.
+ *     summary: Asigna masivamente todas las asignaturas a los estudiantes según su curso y crea los estados de todos los ejercicios correspondientes.
  *     requestBody:
  *       required: true
  *       content:
@@ -157,17 +157,14 @@ const upload = multer({ dest: 'uploads/' });
  *           schema:
  *             type: object
  *             properties:
- *               studentId:
- *                 type: string
- *                 description: ID del estudiante
- *               subjectId:
- *                 type: string
- *                 description: ID de la asignatura
+ *               actualizarMasivo:
+ *                 type: boolean
+ *                 description: Si es true, ejecuta el proceso masivo de asignación y creación de estados.
  *     responses:
  *       200:
- *         description: Progreso creado y estados de ejercicios inicializados
+ *         description: Proceso masivo finalizado, relaciones y estados creados.
  *       400:
- *         description: Faltan campos obligatorios
+ *         description: "El único body permitido es { actualizarMasivo: true }"
  *       500:
  *         description: Error interno
  * /api/students/{id}/study-materials:

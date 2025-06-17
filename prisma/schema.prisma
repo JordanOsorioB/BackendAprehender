@@ -123,7 +123,7 @@ model Exercise {
   title            String
   description      String
   type             ExerciseType
-  difficulty       String
+  difficulty       String?
   totalExperience  Int
   subjectUnitId    Int
   content          Json
