@@ -137,12 +137,68 @@ const { getSessionLogs, createSessionLog, getSessionLogById, getSessionLogsByUse
  *       404:
  *         description: No encontrado
  */
+/**
+ * @swagger
+ * /api/session-logs/subject-activity:
+ *   get:
+ *     tags: [SessionLogs]
+ *     summary: Obtener actividad de estudiantes por asignatura (últimos 7 días)
+ *     description: Devuelve, para cada estudiante con ese subjectId, su userId, studentId, nombre, profilePicture, cantidad de logs y suma total de duración por día, para los últimos 7 días hasta el día de mañana (UTC-4).
+ *     parameters:
+ *       - in: query
+ *         name: subjectId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID de la asignatura
+ *     responses:
+ *       200:
+ *         description: Lista de actividad por estudiante
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   userId:
+ *                     type: string
+ *                   studentId:
+ *                     type: string
+ *                   nombre:
+ *                     type: string
+ *                   profilePicture:
+ *                     type: string
+ *                     nullable: true
+ *                   cantidadLogs:
+ *                     type: integer
+ *                   duracionTotal:
+ *                     type: integer
+ *                     description: Duración total en minutos
+ *                   dias:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         fecha:
+ *                           type: string
+ *                         cantidad:
+ *                           type: integer
+ *                         duracion:
+ *                           type: integer
+ *                           description: Duración total ese día en minutos
+ *       400:
+ *         description: Falta parámetro subjectId
+ *       500:
+ *         description: Error interno
+ */
 
-router.get("/", getSessionLogs);
-router.post("/", createSessionLog);
-router.get("/:id", getSessionLogById);
-router.get("/user/:userId", getSessionLogsByUserId);
-router.put("/:id", updateSessionLog);
-router.delete("/:id", deleteSessionLog);
+router.get('/subject-activity', require('../controllers/sessionLogController').getSubjectActivity);
+router.get('/', getSessionLogs);
+router.post('/', createSessionLog);
+router.get('/user/:userId', getSessionLogsByUserId);
+router.get('/:id', getSessionLogById);
+router.put('/:id', updateSessionLog);
+router.delete('/:id', deleteSessionLog);
 
 module.exports = router;
