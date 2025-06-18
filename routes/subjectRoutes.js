@@ -11,7 +11,7 @@ const {
   getSubjectUnitBySubjectAndUnit,
 } = require("../controllers/subjectUnitController");
 
-const { createStudyMaterial } = require("../controllers/studyMaterialController");
+const { createStudyMaterial, getStudyMaterialsBySubject } = require("../controllers/studyMaterialController");
 
 const router = express.Router();
 
@@ -193,6 +193,30 @@ const router = express.Router();
  *         description: Faltan campos obligatorios
  *       500:
  *         description: Error interno
+ *   get:
+ *     tags: [Subjects]
+ *     summary: Obtiene todos los materiales de estudio de una asignatura
+ *     description: Devuelve una lista de materiales de estudio asociados a la asignatura indicada.
+ *     parameters:
+ *       - in: path
+ *         name: subjectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la asignatura
+ *     responses:
+ *       200:
+ *         description: Lista de materiales de estudio
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/StudyMaterial'
+ *       404:
+ *         description: Asignatura no encontrada
+ *       500:
+ *         description: Error interno
  */
 
 // Rutas de asignaturas
@@ -209,5 +233,7 @@ router.post('/:subjectId/study-materials', (req, res, next) => {
   req.body.subjectId = req.params.subjectId;
   createStudyMaterial(req, res, next);
 });
+
+router.get('/:subjectId/study-materials', getStudyMaterialsBySubject);
 
 module.exports = router;
