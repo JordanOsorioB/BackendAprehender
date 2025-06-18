@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const XLSX = require('xlsx');
 const prisma = new PrismaClient();
 
 const getStudentsByTeacher = async (req, res) => {
@@ -14,7 +15,7 @@ const getStudentsByTeacher = async (req, res) => {
         courseEnrollments: {
           some: {
             course: {
-              teacherId: teacherId
+              teacherId
             }
           }
         }
@@ -27,10 +28,23 @@ const getStudentsByTeacher = async (req, res) => {
           }
         },
         courseEnrollments: {
+          where: {
+            course: {
+              teacherId
+            }
+          },
           include: {
             course: {
               include: {
-                subjects: true,
+                units: {
+                  include: {
+                    subjectUnits: {
+                      include: {
+                        subject: true
+                      }
+                    }
+                  }
+                },
                 teacher: true
               }
             }
@@ -48,15 +62,13 @@ const getStudentsByTeacher = async (req, res) => {
 
       if (student.user?.sessionLogs && Array.isArray(student.user.sessionLogs)) {
         totalMinutesConnected = student.user.sessionLogs.reduce((sum, log) => {
-          if (log.duration) {
-            return sum + log.duration;
-          }
+          if (log.duration) return sum + log.duration;
 
           if (log.loginAt && log.logoutAt) {
-            const loginTime = new Date(log.loginAt);
-            const logoutTime = new Date(log.logoutAt);
-            const diffInMinutes = Math.floor((logoutTime - loginTime) / (1000 * 60));
-            return sum + (diffInMinutes > 0 ? diffInMinutes : 0);
+            const login = new Date(log.loginAt);
+            const logout = new Date(log.logoutAt);
+            const diff = Math.floor((logout - login) / 60000); // minutos
+            return sum + (diff > 0 ? diff : 0);
           }
 
           return sum;
@@ -69,46 +81,97 @@ const getStudentsByTeacher = async (req, res) => {
       };
     });
 
-    const totalMinutesAllStudents = studentsWithTimes.reduce((sum, student) => sum + student.calculatedMinutes, 0);
-    const totalHoursAllStudents = totalMinutesAllStudents / 60;
+    const totalMinutesAll = studentsWithTimes.reduce((sum, s) => sum + s.calculatedMinutes, 0);
+    const totalHoursAll = totalMinutesAll / 60;
 
-    const data = studentsWithTimes.map(student => {
-      const totalMinutesConnected = student.calculatedMinutes;
-      const totalHoursConnected = totalMinutesConnected / 60;
+    const excelData = [];
 
-      const percentageMinutes = totalMinutesAllStudents > 0
-        ? Math.round((totalMinutesConnected / totalMinutesAllStudents) * 10000) / 100
-        : 0;
+    for (const student of studentsWithTimes) {
+      const totalMinutes = student.calculatedMinutes;
+      const totalHours = totalMinutes / 60;
+      const percentage = totalHoursAll > 0 ? Math.round((totalHours / totalHoursAll) * 10000) / 100 : 0;
 
-      const percentageHours = totalHoursAllStudents > 0
-        ? Math.round((totalHoursConnected / totalHoursAllStudents) * 10000) / 100
-        : 0;
+      for (const enrollment of student.courseEnrollments) {
+        const course = enrollment.course;
+        const completedAt = enrollment.completedAt
+          ? new Date(enrollment.completedAt).toLocaleDateString('es-CL')
+          : '';
 
-      const teacherEnrollment = student.courseEnrollments.find(enrollment =>
-        enrollment.course && enrollment.course.teacherId === teacherId
-      );
+        if (course?.units && course.units.length > 0) {
+          const unitMap = new Map();
 
-      const course = teacherEnrollment?.course;
-      const firstSubject = course?.subjects?.[0];
+          course.units.forEach(unit => {
+            unit.subjectUnits.forEach(subjectUnit => {
+              const currentUnitId = unit.id;
+              const unitName = unit.title || '';
+              const subjectName = subjectUnit.subject?.name || '';
+              const key = `${currentUnitId}-${subjectUnit.subjectId}`;
 
-      return {
-        studentName: student.nombre,
-        level: student.level,
-        totalHoursConnected: Math.round(totalHoursConnected * 100) / 100,
-        totalMinutesConnected,
-        percentageHours,
-        percentageMinutes,
-        sessionCount: student.user?.sessionLogs?.length || 0,
-        subjectName: firstSubject?.name || '',
-        course: course?.name || '',
-        teacherName: course?.teacher?.name || ''
-      };
-    });
+              if (!unitMap.has(key)) {
+                unitMap.set(key, {
+                  unitName,
+                  subjectName
+                });
+              }
+            });
+          });
 
-    return res.status(200).json(data);
+          unitMap.forEach((unitData) => {
+            excelData.push({
+              'Nombre del estudiante': student.nombre || '',
+              'Nivel': student.level || 0,
+              'Experiencia': student.experience || 0,
+              'Curso': course?.name || '',
+              'Fecha de término': completedAt,
+              'Asignatura': unitData.subjectName,
+              'Unidad': unitData.unitName,
+              'Porcentaje': percentage,
+              'Cantidad de horas conectado': Math.round(totalHours * 100) / 100
+            });
+          });
+        } else {
+          excelData.push({
+            'Nombre del estudiante': student.nombre || '',
+            'Nivel': student.level || 0,
+            'Experiencia': student.experience || 0,
+            'Curso': course?.name || '',
+            'Fecha de término': completedAt,
+            'Asignatura': '',
+            'Unidad': '',
+            'Porcentaje': percentage,
+            'Cantidad de horas conectado': Math.round(totalHours * 100) / 100
+          });
+        }
+      }
+    }
+
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    worksheet['!cols'] = [
+      { wch: 25 },
+      { wch: 8 },
+      { wch: 12 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 20 },
+      { wch: 12 },
+      { wch: 25 }
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte de Actividad');
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="reporte_actividad_${new Date().toISOString().split('T')[0]}.xlsx"`
+    );
+
+    res.send(buffer);
   } catch (error) {
     console.error('Error fetching students by teacher:', error);
-    return res.status(500).json({ message: 'Internal server error.' });
+    res.status(500).json({ message: 'Internal server error.' });
   }
 };
 

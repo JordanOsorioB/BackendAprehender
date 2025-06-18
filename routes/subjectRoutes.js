@@ -11,6 +11,8 @@ const {
   getSubjectUnitBySubjectAndUnit,
 } = require("../controllers/subjectUnitController");
 
+const { createStudyMaterial } = require("../controllers/studyMaterialController");
+
 const router = express.Router();
 
 /**
@@ -139,6 +141,58 @@ const router = express.Router();
  *         description: Relación Subject-Unit encontrada
  *       404:
  *         description: No se encontró la relación
+ *
+ * /api/subjects/{subjectId}/study-materials:
+ *   post:
+ *     tags: [Subjects]
+ *     summary: Crea un nuevo material de estudio para una asignatura
+ *     description: Crea un material de estudio asociado a una asignatura específica.
+ *     parameters:
+ *       - in: path
+ *         name: subjectId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la asignatura
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - type
+ *               - url
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Título del material
+ *               description:
+ *                 type: string
+ *                 description: Descripción del material (opcional)
+ *               type:
+ *                 type: string
+ *                 description: Tipo de material (por ejemplo, PDF, VIDEO, LINK, etc)
+ *               url:
+ *                 type: string
+ *                 description: URL del material
+ *     responses:
+ *       200:
+ *         description: Material creado con éxito
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 material:
+ *                   $ref: '#/components/schemas/StudyMaterial'
+ *       400:
+ *         description: Faltan campos obligatorios
+ *       500:
+ *         description: Error interno
  */
 
 // Rutas de asignaturas
@@ -150,5 +204,10 @@ router.delete("/:id", deleteSubject);
 
 // Ruta para relación subjectId y unitId (menos limpia pero efectiva)
 router.get("/:subjectId/units/:unitId", getSubjectUnitBySubjectAndUnit);
+
+router.post('/:subjectId/study-materials', (req, res, next) => {
+  req.body.subjectId = req.params.subjectId;
+  createStudyMaterial(req, res, next);
+});
 
 module.exports = router;

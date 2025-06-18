@@ -32,9 +32,14 @@ const generateAttendanceReportCSV = async (req, res) => {
       where: { id: courseId },
       include: {
         school: true,
-        students: {
+        enrollments: {
+          include: {
+            student: true
+          },
           orderBy: {
-            name: 'asc'
+            student: {
+              nombre: 'asc'
+            }
           }
         }
       }
@@ -83,12 +88,13 @@ const generateAttendanceReportCSV = async (req, res) => {
       }
       csvContent += `Total asistencia,Total ausencia\n`;
 
-      // Generar filas para cada estudiante
-      course.students.forEach(student => {
+      // Generar filas para cada estudiante (usando enrollments)
+      course.enrollments.forEach(enrollment => {
+        const student = enrollment.student;
         let totalPresent = 0;
         let totalAbsent = 0;
         
-        let row = `"${course.name}","${student.name}",`;
+        let row = `"${course.name}","${student.nombre}",`;
         
         for (let day = 1; day <= daysInMonth; day++) {
           const key = `${student.id}-${day}`;
@@ -155,9 +161,14 @@ const generateMonthlyAttendanceReport = async (req, res) => {
       where: { id: courseId },
       include: {
         school: true,
-        students: {
+        enrollments: {
+          include: {
+            student: true
+          },
           orderBy: {
-            name: 'asc'
+            student: {
+              nombre: 'asc'
+            }
           }
         }
       }
@@ -194,11 +205,12 @@ const generateMonthlyAttendanceReport = async (req, res) => {
     }
     csvContent += `Total asistencia,Total ausencia\n`;
 
-    course.students.forEach(student => {
+    course.enrollments.forEach(enrollment => {
+      const student = enrollment.student;
       let totalPresent = 0;
       let totalAbsent = 0;
       
-      let row = `"${course.name}","${student.name}",`;
+      let row = `"${course.name}","${student.nombre}",`;
       
       for (let day = 1; day <= daysInMonth; day++) {
         const key = `${student.id}-${day}`;
