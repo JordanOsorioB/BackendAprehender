@@ -306,6 +306,123 @@ router.get('/with-progress', studentController.getStudentsWithProgress);
  *         description: Faltan datos obligatorios
  *       500:
  *         description: Error interno
+ * @swagger
+ * /api/students/bulk:
+ *   post:
+ *     tags: [Students]
+ *     summary: Carga masiva de estudiantes
+ *     description: Crea múltiples estudiantes con sus usuarios asociados y los inscribe a cursos. Solo usuarios UTP pueden acceder.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - estudiantes
+ *             properties:
+ *               estudiantes:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - nombre
+ *                     - password
+ *                     - courseId
+ *                   properties:
+ *                     nombre:
+ *                       type: string
+ *                       description: Nombre completo del estudiante
+ *                       example: "Juan Perez"
+ *                     password:
+ *                       type: string
+ *                       description: Contraseña del estudiante (mínimo 6 caracteres)
+ *                       example: "123456"
+ *                     courseId:
+ *                       type: string
+ *                       description: ID del curso al que se inscribirá el estudiante
+ *                       example: "cmc0ufipy000apxhidbcw5b8s"
+ *                     level:
+ *                       type: integer
+ *                       description: Nivel inicial del estudiante (siempre 1)
+ *                       default: 1
+ *                       example: 1
+ *                     experience:
+ *                       type: integer
+ *                       description: Experiencia inicial del estudiante (siempre 1)
+ *                       default: 1
+ *                       example: 1
+ *     responses:
+ *       200:
+ *         description: Carga masiva completada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 created:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       nombre:
+ *                         type: string
+ *                         example: "Juan Perez"
+ *                       userId:
+ *                         type: string
+ *                         example: "cmc0ufipy000apxhidbcw5b8s"
+ *                       studentId:
+ *                         type: string
+ *                         example: "cmc0ufipy000apxhidbcw5b8s"
+ *                       email:
+ *                         type: string
+ *                         example: "juanperez1234567890@zorrecursos.cl"
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       row:
+ *                         type: integer
+ *                         description: Número de fila con error
+ *                         example: 2
+ *                       error:
+ *                         type: string
+ *                         description: Descripción del error
+ *                         example: "courseId inválido"
+ *       400:
+ *         description: Datos inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Se requiere un array de estudiantes"
+ *       403:
+ *         description: No autorizado - Solo usuarios UTP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Solo usuarios UTP pueden realizar carga masiva de estudiantes"
+ *       500:
+ *         description: Error interno del servidor
  */
 router.get('/', studentController.getStudents);
 router.post('/', studentController.createStudent);
@@ -318,5 +435,6 @@ router.post('/student-subject-progress', studentSubjectProgressController.create
 router.get('/:id/study-materials', getStudyMaterialsForStudent);
 router.post('/add-experience', studentController.addExperienceAndLevel);
 router.post('/upload-profile-picture', studentController.uploadProfilePicture);
+router.post('/bulk', studentController.bulkCreateStudents);
 
 module.exports = router;

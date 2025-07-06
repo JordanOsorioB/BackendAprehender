@@ -4,6 +4,7 @@ const prisma = new PrismaClient();
 const supabase = require('../supabase/client');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcrypt');
 
 // Obtener todos los estudiantes
 const getStudents = async (req, res) => {
@@ -287,6 +288,161 @@ const getStudentsWithProgress = async (req, res) => {
   }
 };
 
+// POST /students/bulk - Carga masiva de estudiantes
+const bulkCreateStudents = async (req, res) => {
+  try {
+    const { estudiantes } = req.body;
+    const { schoolId } = req.user; // Extraer del token JWT
+
+    // Validar que el usuario sea UTP
+    if (req.user.role !== 'UTP') {
+      return res.status(403).json({
+        success: false,
+        message: 'Solo usuarios UTP pueden realizar carga masiva de estudiantes'
+      });
+    }
+
+    // Validar que se envíen estudiantes
+    if (!estudiantes || !Array.isArray(estudiantes) || estudiantes.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Se requiere un array de estudiantes'
+      });
+    }
+
+    const results = {
+      success: true,
+      created: [],
+      errors: []
+    };
+
+    // Procesar cada estudiante
+    for (let i = 0; i < estudiantes.length; i++) {
+      const estudiante = estudiantes[i];
+      const rowNumber = i + 1;
+
+      try {
+        // Validaciones básicas
+        if (!estudiante.nombre || estudiante.nombre.trim() === '') {
+          results.errors.push({
+            row: rowNumber,
+            error: 'Nombre es requerido'
+          });
+          continue;
+        }
+
+        if (!estudiante.password || estudiante.password.length < 6) {
+          results.errors.push({
+            row: rowNumber,
+            error: 'Contraseña debe tener al menos 6 caracteres'
+          });
+          continue;
+        }
+
+        if (!estudiante.courseId) {
+          results.errors.push({
+            row: rowNumber,
+            error: 'courseId es requerido'
+          });
+          continue;
+        }
+
+        // Validar que el curso existe y pertenece a la escuela
+        const course = await prisma.course.findFirst({
+          where: {
+            id: estudiante.courseId,
+            schoolId: schoolId
+          }
+        });
+
+        if (!course) {
+          results.errors.push({
+            row: rowNumber,
+            error: 'courseId inválido o no pertenece a esta escuela'
+          });
+          continue;
+        }
+
+        // Generar email único
+        const timestamp = Date.now();
+        const emailBase = estudiante.nombre.toLowerCase().replace(/\s+/g, '');
+        const email = `${emailBase}${timestamp}@zorrecursos.cl`;
+
+        // Verificar que el email no exista
+        const existingUser = await prisma.user.findUnique({
+          where: { email }
+        });
+
+        if (existingUser) {
+          results.errors.push({
+            row: rowNumber,
+            error: 'Email generado ya existe, intente de nuevo'
+          });
+          continue;
+        }
+
+        // Crear el estudiante
+        const newStudent = await prisma.student.create({
+          data: {
+            nombre: estudiante.nombre.trim(),
+            level: 1,
+            experience: 1,
+            coins: 0,
+            profileType: 'STUDENT'
+          }
+        });
+
+        // Hashear la contraseña
+        const hashedPassword = await bcrypt.hash(estudiante.password, 10);
+
+        // Crear el usuario
+        const newUser = await prisma.user.create({
+          data: {
+            email,
+            password: hashedPassword,
+            schoolId,
+            role: 'STUDENT',
+            username: estudiante.nombre.trim(),
+            studentId: newStudent.id
+          }
+        });
+
+        // Crear la inscripción al curso
+        await prisma.courseEnrollment.create({
+          data: {
+            studentId: newStudent.id,
+            courseId: estudiante.courseId
+          }
+        });
+
+        // Agregar a resultados exitosos
+        results.created.push({
+          nombre: estudiante.nombre,
+          userId: newUser.id,
+          studentId: newStudent.id,
+          email: email
+        });
+
+      } catch (error) {
+        console.error(`Error procesando estudiante ${rowNumber}:`, error);
+        results.errors.push({
+          row: rowNumber,
+          error: 'Error interno procesando estudiante'
+        });
+      }
+    }
+
+    res.json(results);
+
+  } catch (error) {
+    console.error('Error en bulkCreateStudents:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error interno del servidor'
+    });
+  }
+};
+
 module.exports = {
   getStudents,
   getStudentById,
@@ -298,4 +454,5 @@ module.exports = {
   addExperienceAndLevel,
   uploadProfilePicture,
   getStudentsWithProgress,
+  bulkCreateStudents
 };
