@@ -58,6 +58,7 @@ model User {
   student   Student? @relation(fields: [studentId], references: [id])
   teacher   Teacher? @relation(fields: [teacherId], references: [id])
   sessionLogs SessionLog[] // Relación inversa
+  passwordResetTokens PasswordResetToken[] // Relación inversa
 }
 
 model Teacher {
@@ -302,4 +303,17 @@ model AttendanceReport {
   @@index([schoolId, year, month])
   @@index([courseId, year, month])
   @@index([studentId, year])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userId])
 }
