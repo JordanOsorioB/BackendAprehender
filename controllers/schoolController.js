@@ -30,10 +30,17 @@ const getSchoolByCode = async (req, res) => {
 // Crear una nueva escuela
 const createSchool = async (req, res) => {
   const { name } = req.body;
-  if (!name) {
-    return res
-      .status(400)
-      .json({ error: "⚠️ El campo 'name' es obligatorio." });
+  if (!name || name.trim() === "") {
+    return res.status(400).json({ message: "El nombre del colegio es requerido" });
+  }
+  // Validar existencia (insensible a mayúsculas y espacios)
+  const existing = await prisma.school.findFirst({
+    where: {
+      name: { equals: name.trim(), mode: 'insensitive' }
+    }
+  });
+  if (existing) {
+    return res.status(409).json({ message: "Ya existe un colegio con ese nombre" });
   }
 
   try {

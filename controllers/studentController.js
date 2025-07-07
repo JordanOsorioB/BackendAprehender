@@ -363,6 +363,22 @@ const bulkCreateStudents = async (req, res) => {
           continue;
         }
 
+        // Validar que no exista un estudiante con el mismo nombre en la escuela
+        const existingStudent = await prisma.student.findFirst({
+          where: {
+            nombre: { equals: estudiante.nombre.trim(), mode: 'insensitive' },
+            user: { schoolId: schoolId }
+          },
+          include: { user: true }
+        });
+        if (existingStudent) {
+          results.errors.push({
+            row: rowNumber,
+            error: 'Ya existe un estudiante con ese nombre en esta escuela'
+          });
+          continue;
+        }
+
         // Generar email único
         const timestamp = Date.now();
         const emailBase = estudiante.nombre.toLowerCase().replace(/\s+/g, '');
